@@ -1,6 +1,9 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<jsp:include page="/layout/header.jspf"/>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
+<c:set var="ocultarMenu" value="true" scope="request"/>
+
+<jsp:include page="/layout/header.jsp" />
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
         <div class="card shadow-sm">
@@ -39,4 +42,4 @@
         </div>
     </div>
 </div>
-<jsp:include page="/layout/footer.jspf"/>
+<jsp:include page="/layout/footer.jsp"/>
