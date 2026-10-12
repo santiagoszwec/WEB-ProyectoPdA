@@ -50,7 +50,7 @@
 
             <c:if test="${not empty sessionScope.usuarioLogueado}">
                 <span class="navbar-text me-3">
-                    Hola, ${sessionScope.usuarioLogueado.usuario}
+                    Usuario: <c:out value="${sessionScope.usuarioLogueado.nombre}"/>
                 </span>
 
                 <a class="nav-link"

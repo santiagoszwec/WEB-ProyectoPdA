@@ -11,6 +11,12 @@
 
                 <h1 class="text-center mb-4">Registrarse</h1>
 
+                <c:if test="${not empty requestScope.error}">
+                    <div class="alert alert-danger">
+                            ${requestScope.error}
+                    </div>
+                </c:if>
+
                 <form action="${pageContext.request.contextPath}/registro"
                       method="post">
 
@@ -30,6 +36,12 @@
                         <label for="password" class="form-label">Contraseña</label>
                         <input type="password" class="form-control"
                                id="password" name="password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="anioDeGeneracion" class="form-label">Año de generación</label>
+                        <input type="text" class="form-control"
+                               id="anioDeGeneracion" name="anioDeGeneracion" required>
                     </div>
 
                     <div class="d-grid">
