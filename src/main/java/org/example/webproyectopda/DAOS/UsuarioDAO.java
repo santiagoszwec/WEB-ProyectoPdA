@@ -136,19 +136,17 @@ public class UsuarioDAO {
     }
 
     public static Usuario iniciarSesion(String correo, String contrasenia){
-        try{
-            Connection conexion = ConexionDB.obtenerConexion();
+        String sql = "SELECT * FROM usuario WHERE correo = ? AND contrasenia = ?";
 
-            String sql = "SELECT * FROM usuario WHERE correo = ? AND contrasenia = ?";
-            PreparedStatement sentencia = conexion.prepareStatement(sql);
+        try(
+            Connection conexion = ConexionDB.obtenerConexion();
+            PreparedStatement sentencia = conexion.prepareStatement(sql)){
 
             sentencia.setString(1, correo);
             sentencia.setString(2, contrasenia);
 
             ResultSet fila = sentencia.executeQuery();
             if(fila.next()){
-                boolean activo = fila.getBoolean("activo");
-
                 return new Usuario(
                         fila.getInt("id"),
                         fila.getString("nombre"),
@@ -156,11 +154,9 @@ public class UsuarioDAO {
                         fila.getInt("anio_de_generacion"),
                         TipoRol.valueOf(fila.getString("rol")),
                         fila.getString("contrasenia"),
-                        activo);
+                        fila.getBoolean("activo"));
             }
-            else{
-                return null;
-            }
+            return null;
 
         }catch (SQLException e){
             throw new RuntimeException(e);

@@ -19,7 +19,7 @@ public class Usuario {
         this.anioDeGeneracion = anioDeGeneracion;
         this.rol = rol;
         this.contrasenia = contrasenia;
-        this.activo = true;
+        this.activo = activo;
     }
     public Usuario(String nombre, String correo, int anioDeGeneracion, TipoRol rol, String contrasenia) {
         this.nombre = nombre;

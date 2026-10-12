@@ -13,6 +13,12 @@
                     Iniciar sesión
                 </h1>
 
+                <c:if test="${not empty error}">
+                    <div class="alert alert-danger" role="alert">
+                        <c:out value="${error}"/>
+                    </div>
+                </c:if>
+
                 <form action="${pageContext.request.contextPath}/login"
                       method="post">
 
@@ -23,8 +29,8 @@
 
                         <input type="email"
                                class="form-control"
-                               id="correo"
                                name="correo"
+                               value="<c:out value='${correo}'/>"
                                required>
                     </div>
 

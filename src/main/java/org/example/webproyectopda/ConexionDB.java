@@ -14,6 +14,13 @@ public class ConexionDB {
     }
 
     public static Connection obtenerConexion() throws SQLException {
+
+        try {
+            Class.forName("org.mariadb.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("No se encontró el driver de MariaDB en el proyecto", e);
+        }
+
         return DriverManager.getConnection(URL, USUARIO, PASSWORD);
     }
 }
