@@ -12,6 +12,9 @@ public class Notificacion {
     private int usuarioId;
     private Integer publicacionId;
 
+    public Notificacion() {
+    }
+
     public Notificacion(LocalDate fecha, TipoNotificacion tipo, String mensaje, int usuarioId, Integer publicacionId) {
         this.fecha = fecha;
         this.tipo = tipo;

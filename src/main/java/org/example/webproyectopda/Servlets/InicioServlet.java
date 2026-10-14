@@ -10,7 +10,7 @@ import org.example.webproyectopda.Modelos.Usuario;
 
 import java.io.IOException;
 
-@WebServlet("/inicio")
+@WebServlet({"/inicio", ""})
 public class InicioServlet extends HttpServlet {
 
     @Override
