@@ -39,11 +39,17 @@
 
                 <c:if test="${requestScope.ocultarMenu ne true}">
                     <li class="nav-item">
-                        <a class="nav-link"
-                           href="${pageContext.request.contextPath}/">
-                            Inicio
-                        </a>
+                      <a class="nav-link"
+                         href="${pageContext.request.contextPath}/inicio">
+                          Inicio
+                      </a>
                     </li>
+                       <li class="nav-item">
+                        <a class="nav-link"
+                           href="${pageContext.request.contextPath}/notificaciones">
+                            Notificaciones
+                        </a>
+                        </li>
                 </c:if>
 
             </ul>

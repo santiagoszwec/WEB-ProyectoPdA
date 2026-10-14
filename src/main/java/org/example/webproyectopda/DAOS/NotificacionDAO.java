@@ -1,12 +1,14 @@
 package org.example.webproyectopda.DAOS;
 
 import org.example.webproyectopda.ConexionDB;
+import org.example.webproyectopda.ENUMS.TipoNotificacion;
 import org.example.webproyectopda.Modelos.Notificacion;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.sql.Types;
@@ -42,33 +44,49 @@ public class NotificacionDAO {
             return sentencia.executeUpdate() == 1;
         }
     }
-    public static List<Notificacion> listarPorUsuario(int usuarioId) {
-        String sql = "SELECT * FROM notificacion WHERE usuario_id = ? ORDER BY id DESC";
+    public static List<Notificacion> listarPorUsuario(int usuarioId, TipoNotificacion tipo, boolean masAntiguasPrimero)
+            throws SQLException {
+        List<Notificacion> notificaciones = new ArrayList<>();
+        String sql = "SELECT id, fecha, tipo, mensaje, usuario_id, publicacion_id "
+                + "FROM notificacion WHERE usuario_id = ?";
+
+        if (tipo != null) {
+            sql += " AND tipo = ?";
+        }
+
+        if (masAntiguasPrimero) {
+            sql += " ORDER BY fecha ASC, id ASC";
+        } else {
+            sql += " ORDER BY fecha DESC, id DESC";
+        }
 
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
 
             sentencia.setInt(1, usuarioId);
-
-            try (ResultSet filas = sentencia.executeQuery()) {
-                List<Notificacion> retorno = new ArrayList<>();
-                while (filas.next()) {
-                    int publicacionIdRaw = filas.getInt("publicacion_id");
-                    Integer publicacionId = filas.wasNull() ? null : publicacionIdRaw;
-                    retorno.add(new Notificacion(
-                            filas.getInt("id"),
-                            filas.getObject("fecha", java.time.LocalDate.class),
-                            org.example.webproyectopda.ENUMS.TipoNotificacion.valueOf(filas.getString("tipo")),
-                            filas.getString("mensaje"),
-                            filas.getInt("usuario_id"),
-                            publicacionId
-                    ));
-                }
-                return retorno;
+            if (tipo != null) {
+                sentencia.setString(2, tipo.name());
             }
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    notificaciones.add(crearNotificacion(resultado));
+                }
+            }
         }
+        return notificaciones;
+    }
+
+    private static Notificacion crearNotificacion(ResultSet resultado) throws SQLException {
+        Notificacion notificacion = new Notificacion();
+        notificacion.setId(resultado.getInt("id"));
+        notificacion.setFecha(resultado.getObject("fecha", LocalDate.class));
+        notificacion.setTipo(TipoNotificacion.valueOf(resultado.getString("tipo")));
+        notificacion.setMensaje(resultado.getString("mensaje"));
+        notificacion.setUsuarioId(resultado.getInt("usuario_id"));
+
+        int publicacionId = resultado.getInt("publicacion_id");
+        notificacion.setPublicacionId(resultado.wasNull() ? null : publicacionId);
+        return notificacion;
     }
 }
