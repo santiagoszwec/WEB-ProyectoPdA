@@ -9,6 +9,7 @@ public class Curso {
     private int creditos;
     private String descripcion;
     private boolean activo;
+    private String estadoInscripcion;
 
     // Constructor utilizado al obtener un curso desde la base de datos
     public Curso(
@@ -99,6 +100,13 @@ public class Curso {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public String getEstadoInscripcion() {
+        return estadoInscripcion;
+    }
+    public void setEstadoInscripcion(String estadoInscripcion) {
+        this.estadoInscripcion = estadoInscripcion;
     }
 
     @Override

@@ -70,6 +70,35 @@ public class PublicacionDAO {
         }
     }
 
+    public static List<Publicacion> listarPorCurso(int cursoId) {
+        List<Publicacion> retorno = new ArrayList<>();
+        String sql = "SELECT * FROM publicacion WHERE activa = TRUE AND curso_id = ? ORDER BY fecha_publicacion DESC";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, cursoId);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                while (filas.next()) {
+                    int id = filas.getInt("id");
+                    String mensaje = filas.getString("mensaje");
+                    String imagenUrl = filas.getString("imagen_url");
+                    LocalDate fechaPublicacion = filas.getObject("fecha_publicacion", LocalDate.class);
+                    boolean activa = filas.getBoolean("activa");
+                    int usuarioPublicacion = filas.getInt("usuario_id");
+                    int cursoPublicacion = filas.getInt("curso_id");
+
+                    Publicacion publicacion = new Publicacion(id, mensaje, imagenUrl, fechaPublicacion,
+                            !activa, usuarioPublicacion, cursoPublicacion);retorno.add(publicacion);
+                }
+            }
+            return retorno;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static boolean actualizar(Publicacion publicacion) {
         String sql = "UPDATE publicacion SET mensaje = ?, imagen_url = ?, fecha_publicacion = ? WHERE id = ?";
         try {
@@ -199,6 +228,37 @@ public class PublicacionDAO {
             } catch (SQLException e) {
                 // ignorar error al cerrar
             }
+        }
+    }
+
+    public static List<Publicacion> listarUltimas(int usuarioId) {
+        List<Publicacion> publicaciones = new ArrayList<>();
+
+        String sql = "SELECT p.*, c.nombre AS nombre_curso, u.nombre AS nombre_autor FROM publicacion p " +
+                "INNER JOIN inscripcion i ON i.curso_id = p.curso_id INNER JOIN curso c ON c.id = p.curso_id " +
+                "LEFT JOIN usuario u ON u.id = p.usuario_id WHERE i.usuario_id = ? AND p.activa = TRUE AND c.activo = TRUE " +
+                "ORDER BY p.fecha_publicacion DESC, p.id DESC LIMIT 10";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+            sentencia.setInt(1, usuarioId);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                while (filas.next()) {
+                    Publicacion publicacion = new Publicacion(
+                            filas.getInt("id"),
+                            filas.getString("mensaje"),
+                            filas.getString("imagen_url"),
+                            filas.getObject("fecha_publicacion", LocalDate.class),
+                            !filas.getBoolean("activa"),
+                            filas.getInt("usuario_id"),
+                            filas.getInt("curso_id"));
+                    publicaciones.add(publicacion);
+                }
+            }
+            return publicaciones;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 

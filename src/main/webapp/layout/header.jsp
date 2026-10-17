@@ -16,57 +16,47 @@
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/estilos/general.css">
 </head>
-
 <body>
+<nav class="navbar navbar-expand-lg"
+     style="background-color: #0B1F3A;">
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
+    <div class="container-fluid px-4">
 
-        <button class="navbar-toggler"
+        <button class="navbar-toggler border-light"
                 type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent"
                 aria-expanded="false"
-                aria-label="Toggle navigation">
+                aria-label="Abrir menú">
 
-            <span class="navbar-toggler-icon"></span>
+            <span class="navbar-toggler-icon"
+                  style="filter: invert(1);">
+            </span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse"
+             id="navbarSupportedContent">
+            <a href="${pageContext.request.contextPath}/inicio"
+               class="navbar-brand fw-bold fs-3 mb-0 p-0"
+               style="color: white !important; background: transparent !important; border: none !important; text-decoration: none;">
+                ANSALUNI
+            </a>
 
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <c:if test="${not empty sessionScope.usuarioLogueado}">
+                    <span class="navbar-text text-white">
+                        Usuario:
+                        <c:out value="${sessionScope.usuarioLogueado.nombre}" />
+                    </span>
 
-                <c:if test="${requestScope.ocultarMenu ne true}">
-                    <li class="nav-item">
-                      <a class="nav-link"
-                         href="${pageContext.request.contextPath}/inicio">
-                          Inicio
-                      </a>
-                    </li>
-                       <li class="nav-item">
-                        <a class="nav-link"
-                           href="${pageContext.request.contextPath}/notificaciones">
-                            Notificaciones
-                        </a>
-                        </li>
+                    <a class="nav-link text-white"
+                       href="${pageContext.request.contextPath}/logout">
+                        Cerrar sesión
+                    </a>
                 </c:if>
-
-            </ul>
-
-            <c:if test="${not empty sessionScope.usuarioLogueado}">
-                <span class="navbar-text me-3">
-                    Usuario: <c:out value="${sessionScope.usuarioLogueado.nombre}"/>
-                </span>
-
-                <a class="nav-link"
-                   href="${pageContext.request.contextPath}/logout">
-                    Cerrar sesión
-                </a>
-            </c:if>
-
+            </div>
         </div>
     </div>
 </nav>
-
-<main class="container py-4">
+<main class="container-fluid p-0 pt-4">

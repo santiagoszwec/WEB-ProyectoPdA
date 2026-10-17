@@ -105,8 +105,7 @@ public class CursoDAO {
             sentencia.setInt(1, id);
             try (ResultSet resultado = sentencia.executeQuery()) {
                 if (resultado.next()) {
-                    return new Curso(
-                            resultado.getInt("id"),
+                    return new Curso(resultado.getInt("id"),
                             resultado.getString("nombre"),
                             resultado.getInt("semestre"),
                             resultado.getInt("anio"),
@@ -117,6 +116,35 @@ public class CursoDAO {
                 }
                 return null;
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<Curso> listarPorUsuario(int usuarioId) {
+        List<Curso> cursos = new ArrayList<>();
+        String sql = "SELECT c.*, i.estado AS estado_inscripcion FROM curso c INNER JOIN inscripcion i ON i.curso_id = c.id " +
+                "WHERE i.usuario_id = ? AND c.activo = TRUE ORDER BY c.anio DESC, c.semestre DESC, c.nombre";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, usuarioId);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+
+                    Curso curso = new Curso(resultado.getInt("id"),
+                            resultado.getString("nombre"),
+                            resultado.getInt("semestre"),
+                            resultado.getInt("anio"),
+                            resultado.getInt("creditos"),
+                            resultado.getString("descripcion"),
+                            resultado.getBoolean("activo"));
+                    curso.setEstadoInscripcion(resultado.getString("estado_inscripcion"));
+                    cursos.add(curso);
+                }
+            }
+            return cursos;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

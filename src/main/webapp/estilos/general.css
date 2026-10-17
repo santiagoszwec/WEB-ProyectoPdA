@@ -4,7 +4,7 @@
 
 body {
     margin: 0;
-    padding: 40px;
+    padding: 0;
     font-family: Arial, sans-serif;
     background-color: #f4f6f8;
     color: #333;
@@ -36,12 +36,19 @@ button {
 }
 
 a {
-    background-color: #e9ecef;
-    color: #333;
+    display: inline;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    text-decoration: none;
+    font-size: inherit;
+    cursor: pointer;
+    background-color: transparent;
+    color: inherit;
 }
 
 a:hover {
-    background-color: #d6d9dc;
+    background-color: transparent;
 }
 
 button {
@@ -107,4 +114,8 @@ input:focus {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
+}
+
+main {
+    padding-top: 24px !important;
 }

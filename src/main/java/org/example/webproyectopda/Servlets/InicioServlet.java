@@ -1,3 +1,4 @@
+
 package org.example.webproyectopda.Servlets;
 
 import jakarta.servlet.ServletException;
@@ -6,6 +7,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import org.example.webproyectopda.DAOS.PublicacionDAO;
 import org.example.webproyectopda.Modelos.Usuario;
 
 import java.io.IOException;
@@ -20,16 +23,12 @@ public class InicioServlet extends HttpServlet {
         HttpSession sesion = request.getSession(false);
 
         if (sesion == null || sesion.getAttribute("usuarioLogueado") == null) {
-
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-
         Usuario usuario = (Usuario) sesion.getAttribute("usuarioLogueado");
-
         request.setAttribute("usuario", usuario);
-
+        request.setAttribute("publicaciones", PublicacionDAO.listarUltimas(usuario.getId()));
         request.getRequestDispatcher("/inicio.jsp").forward(request, response);
     }
-
 }
