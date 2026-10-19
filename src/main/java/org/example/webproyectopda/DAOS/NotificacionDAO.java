@@ -76,7 +76,18 @@ public class NotificacionDAO {
         }
         return notificaciones;
     }
+    public static boolean eliminar(int notificacionId, int usuarioId) throws SQLException {
+        String sql = "DELETE FROM notificacion WHERE id = ? AND usuario_id = ?";
 
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, notificacionId);
+            sentencia.setInt(2, usuarioId);
+
+            return sentencia.executeUpdate() == 1;
+        }
+    }
     private static Notificacion crearNotificacion(ResultSet resultado) throws SQLException {
         Notificacion notificacion = new Notificacion();
         notificacion.setId(resultado.getInt("id"));

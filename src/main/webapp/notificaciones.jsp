@@ -50,6 +50,17 @@
                     </a>
                 </div>
             </form>
+            <c:if test="${not empty notificacionMensaje}">
+                <div class="alert alert-success" role="alert">
+                    <c:out value="${notificacionMensaje}" />
+                </div>
+            </c:if>
+
+            <c:if test="${not empty notificacionError}">
+                <div class="alert alert-danger" role="alert">
+                    <c:out value="${notificacionError}" />
+                </div>
+            </c:if>
 
             <c:if test="${not empty aviso}">
                 <div class="alert alert-warning" role="alert">
@@ -92,6 +103,7 @@
                             <th scope="col">Fecha</th>
                             <th scope="col">Tipo</th>
                             <th scope="col">Mensaje</th>
+                            <th scope="col" class="text-end">Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -109,6 +121,16 @@
                                 <td>
                                     <c:out value="${notificacion.mensaje}" />
                                 </td>
+                                     <td class="text-end">
+                                        <form method="post"
+                                             action="${pageContext.request.contextPath}/notificaciones"
+                                                 class="d-inline">
+                                                  <input type="hidden" name="id" value="${notificacion.id}">
+                                                  <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    Marcar como leída
+                                                     </button>
+                                           </form>
+                                        </td>
                             </tr>
                         </c:forEach>
                         </tbody>
