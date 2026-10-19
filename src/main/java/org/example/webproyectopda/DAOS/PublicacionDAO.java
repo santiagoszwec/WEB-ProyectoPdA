@@ -635,5 +635,46 @@ public class PublicacionDAO {
                 fila.getInt("curso_id"),
                 TipoCategoria.valueOf(fila.getString("categoria_mensaje")));
     }
+
+    public static List<PublicacionFeed> listarFeedPorCurso(int cursoId) {
+        List<PublicacionFeed> retorno = new ArrayList<>();
+        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, u.nombre AS autor, "
+                + "CASE WHEN d.id IS NOT NULL THEN 'Duda' "
+                + "     WHEN m.id IS NOT NULL THEN 'Mensaje' "
+                + "     WHEN ma.id IS NOT NULL THEN 'Material' "
+                + "     ELSE 'Publicación' END AS tipo, "
+                + "COALESCE(d.categoria, m.categoria) AS categoria, d.estado AS estado "
+                + "FROM publicacion p "
+                + "LEFT JOIN usuario u ON u.id = p.usuario_id "
+                + "LEFT JOIN duda d ON d.id = p.id "
+                + "LEFT JOIN mensaje m ON m.id = p.id "
+                + "LEFT JOIN material ma ON ma.id = p.id "
+                + "WHERE p.activa = TRUE AND p.curso_id = ? "
+                + "ORDER BY p.fecha_publicacion DESC, p.id DESC";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, cursoId);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                while (filas.next()) {
+                    PublicacionFeed publicacion = new PublicacionFeed();
+                    publicacion.setId(filas.getInt("id"));
+                    publicacion.setMensaje(filas.getString("mensaje"));
+                    publicacion.setImagenUrl(filas.getString("imagen_url"));
+                    publicacion.setFechaPublicacion(filas.getObject("fecha_publicacion", LocalDate.class));
+                    publicacion.setAutor(filas.getString("autor"));
+                    publicacion.setTipo(filas.getString("tipo"));
+                    publicacion.setCategoria(filas.getString("categoria"));
+                    publicacion.setEstado(filas.getString("estado"));
+                    retorno.add(publicacion);
+                }
+            }
+            return retorno;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
 
