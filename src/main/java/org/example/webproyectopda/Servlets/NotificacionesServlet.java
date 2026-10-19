@@ -30,6 +30,9 @@ public class NotificacionesServlet extends HttpServlet {
         }
         Usuario usuario = (Usuario) sesion.getAttribute("usuarioLogueado");
 
+
+        moverMensaje(sesion, request, "notificacionMensaje");
+        moverMensaje(sesion, request, "notificacionError");
         String tipoParam = request.getParameter("tipo");
         String ordenParam = request.getParameter("orden");
 
@@ -61,5 +64,52 @@ public class NotificacionesServlet extends HttpServlet {
         request.setAttribute("filtroTipo", tipoParam);
         request.setAttribute("filtroOrden", ordenParam);
         request.getRequestDispatcher("/notificaciones.jsp").forward(request, response);
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+
+        HttpSession sesion = request.getSession(false);
+        if (sesion == null || sesion.getAttribute("usuarioLogueado") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        Usuario usuario = (Usuario) sesion.getAttribute("usuarioLogueado");
+
+
+        int notificacionId;
+        try {
+            notificacionId = Integer.parseInt(request.getParameter("id"));
+        } catch (NumberFormatException e) {
+            sesion.setAttribute("notificacionError", "La notificación indicada no es válida.");
+            response.sendRedirect(request.getContextPath() + "/notificaciones");
+            return;
+        }
+
+
+        try {
+            boolean eliminada = NotificacionDAO.eliminar(notificacionId, usuario.getId());
+            if (eliminada) {
+                sesion.setAttribute("notificacionMensaje", "Notificación marcada como leída.");
+            } else {
+                sesion.setAttribute("notificacionError", "La notificación no existe o ya fue marcada como leída.");
+            }
+        } catch (SQLException e) {
+            log("Error al eliminar la notificación " + notificacionId, e);
+            sesion.setAttribute("notificacionError", "No se pudo marcar la notificación como leída. Intentá de nuevo más tarde.");
+        }
+
+
+        response.sendRedirect(request.getContextPath() + "/notificaciones");
+    }
+
+
+    private void moverMensaje(HttpSession sesion, HttpServletRequest request, String nombre) {
+        Object valor = sesion.getAttribute(nombre);
+        if (valor != null) {
+            request.setAttribute(nombre, valor);
+            sesion.removeAttribute(nombre);
+        }
     }
 }
