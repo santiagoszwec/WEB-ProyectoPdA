@@ -13,6 +13,7 @@ public class Publicacion {
     private boolean dadaDeBaja;
     private int usuarioId;
     private int cursoId;
+    private String autorNombre;
 
     public Publicacion() {
     }
@@ -90,6 +91,15 @@ public class Publicacion {
     public void setCursoId(int cursoId) {
         this.cursoId = cursoId;
     }
+
+    public String getAutorNombre() {
+        return autorNombre;
+    }
+
+    public void setAutorNombre(String autorNombre) {
+        this.autorNombre = autorNombre;
+    }
+
 
     @Override
     public String toString() {

@@ -76,25 +76,27 @@ public class DudaDAO {
         }
     }
 
-    public static Duda buscarPorId(int id) {
-        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, p.usuario_id, p.curso_id, d.estado, d.categoria " +
-                "FROM publicacion p JOIN duda d ON d.id = p.id WHERE p.id = ?";
+    public static Duda buscarPorId(int id) throws SQLException {
+        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, p.usuario_id, p.curso_id, "
+                + "d.estado, d.categoria, u.nombre AS autor_nombre "
+                + "FROM publicacion p "
+                + "JOIN duda d ON d.id = p.id "
+                + "LEFT JOIN usuario u ON u.id = p.usuario_id "
+                + "WHERE p.id = ?";
 
-        try {
-            Connection conexion = ConexionDB.obtenerConexion();
-            PreparedStatement sentencia = conexion.prepareStatement(sql);
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
             sentencia.setInt(1, id);
 
-            ResultSet fila = sentencia.executeQuery();
-
-            if (fila.next()) {
-                return mapearDuda(fila);
+            try (ResultSet fila = sentencia.executeQuery()) {
+                if (fila.next()) {
+                    Duda duda = mapearDuda(fila);
+                    duda.setAutorNombre(fila.getString("autor_nombre"));
+                    return duda;
+                }
+                return null;
             }
-
-            return null;
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
