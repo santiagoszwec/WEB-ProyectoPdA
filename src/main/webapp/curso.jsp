@@ -23,6 +23,14 @@
                 Año: <c:out value="${curso.anio}" />
                 · Semestre: <c:out value="${curso.semestre}" />
                 · Créditos: <c:out value="${curso.creditos}" />
+                 <c:if test="${not empty estadoCurso}">
+                    · Estado:
+                    <c:choose>
+                        <c:when test="${estadoCurso == 'Cursando'}"><span class="badge text-bg-primary">Cursando</span></c:when>
+                        <c:when test="${estadoCurso == 'Cursada'}"><span class="badge text-bg-secondary">Cursada</span></c:when>
+                        <c:when test="${estadoCurso == 'Aprobada'}"><span class="badge text-bg-success">Aprobada</span></c:when>
+                    </c:choose>
+                 </c:if>
             </p>
 
             <c:if test="${not empty mensajeExito}">

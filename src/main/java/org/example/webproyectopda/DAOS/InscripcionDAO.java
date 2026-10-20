@@ -217,6 +217,28 @@ public class InscripcionDAO {
         }
     }
 
+    public static TipoEstado obtenerEstado(int usuarioId, int cursoId) {
+        String sql = "SELECT estado FROM inscripcion WHERE usuario_id = ? AND curso_id = ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, usuarioId);
+            sentencia.setInt(2, cursoId);
+
+            try (ResultSet fila = sentencia.executeQuery()) {
+                if (fila.next()) {
+                    return TipoEstado.valueOf(fila.getString("estado"));
+                }
+                return null;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 
 
 }
