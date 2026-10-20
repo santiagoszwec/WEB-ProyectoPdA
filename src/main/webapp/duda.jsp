@@ -3,6 +3,11 @@
 
 <jsp:include page="/layout/header.jsp" />
 
+<style>
+    .texto-error { color: #dc3545; }
+    .preview img { max-width: 240px; max-height: 240px; border-radius: .5rem; }
+</style>
+
 <div class="container-fluid">
     <div class="row g-0">
         <jsp:include page="/layout/sidebar.jsp" />
@@ -31,7 +36,9 @@
                                 <c:out value="${empty duda.autorNombre ? 'Usuario eliminado' : duda.autorNombre}" />
                             </strong>
                             <span class="text-muted small"><c:out value="${duda.fechaPublicacion}" /></span>
-                            <span class="badge text-bg-info"><c:out value="${duda.categoria}" /></span>
+                            <span class="badge text-bg-info">
+                                <c:out value="${duda.categoria eq 'Reunion' ? 'Reunión' : duda.categoria}" />
+                            </span>
                             <span class="badge ${duda.estado == 'Abierta' ? 'text-bg-warning' : 'text-bg-success'}">
                                 <c:out value="${duda.estado}" />
                             </span>
@@ -95,6 +102,60 @@
                         </div>
                     </div>
                 </c:forEach>
+
+                <h2 class="h5 mt-4 mb-3">Responder</h2>
+
+                <c:choose>
+                    <c:when test="${puedeResponder}">
+
+                        <c:if test="${not empty errorRespuesta}">
+                            <div class="alert alert-danger" role="alert"><c:out value="${errorRespuesta}" /></div>
+                        </c:if>
+
+                        <form id="formImagen" action="${pageContext.request.contextPath}/duda" method="post"
+                              class="card card-body shadow-sm"
+                              data-cloud-name="<c:out value='${cloudName}' />"
+                              data-upload-preset="<c:out value='${uploadPreset}' />"
+                              data-configurado="${cloudinaryConfigurado}">
+
+                            <input type="hidden" name="id" value="${duda.id}">
+                            <input type="hidden" id="imagenUrl" name="imagenUrl" value="<c:out value='${imagenUrl}' />">
+                            <input type="hidden" id="imagenPublicId" name="imagenPublicId" value="<c:out value='${imagenPublicId}' />">
+
+                            <div class="mb-3">
+                                <label for="texto" class="form-label">Tu respuesta <span class="text-danger">*</span></label>
+                                <textarea id="texto" name="texto" class="form-control" rows="4"
+                                          maxlength="2000" required><c:out value="${texto}" /></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="archivoImagen" class="form-label">Imagen <span class="text-muted">(opcional)</span></label>
+                                <input type="file" id="archivoImagen" class="form-control" accept="image/jpeg,image/png"
+                                       ${cloudinaryConfigurado ? '' : 'disabled'}>
+                                <small class="text-muted">JPG o PNG, hasta 5 MB. Se sube al publicar.</small>
+
+                                <c:if test="${not cloudinaryConfigurado}">
+                                    <p class="alert alert-info mt-2 mb-0">La subida de imágenes aún no está configurada. Podés publicar sin imagen.</p>
+                                </c:if>
+
+                                <div id="contenedorPreview" class="preview mt-2" hidden>
+                                    <img id="previewImagen" alt="Vista previa de la imagen">
+                                    <button id="quitarImagen" type="button" class="btn btn-sm btn-outline-secondary ms-2">Quitar imagen</button>
+                                </div>
+                                <p id="estadoImagen" class="small mt-2 mb-0" role="status" aria-live="polite"></p>
+                            </div>
+
+                            <div>
+                                <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar">Publicar</button>
+                            </div>
+                        </form>
+
+                        <script src="${pageContext.request.contextPath}/js/subida-imagen.js" defer></script>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="alert alert-secondary">Esta duda está resuelta: no admite nuevas respuestas.</div>
+                    </c:otherwise>
+                </c:choose>
 
             </c:if>
         </div>
