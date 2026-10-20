@@ -159,6 +159,14 @@
                                              class="img-fluid rounded mt-3"
                                              style="max-height: 350px;">
                                     </c:if>
+                                    <c:if test="${publicacion.tipo eq 'Duda'}">
+                                        <div class="mt-3">
+                                            <a href="${pageContext.request.contextPath}/duda?id=${publicacion.id}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                ${publicacion.estado eq 'Abierta' ? 'Ver duda y responder' : 'Ver duda'}
+                                            </a>
+                                        </div>
+                                    </c:if>
                                 </div>
                             </div>
                         </c:forEach>

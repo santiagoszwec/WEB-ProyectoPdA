@@ -1,11 +1,14 @@
 package org.example.webproyectopda.Modelos;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Comentario {
 
     private int id;
     private String mensaje;
     private String imagenUrl;
+    private String imagenPublicId;
     private LocalDate fechaPublicacion;
     private int usuarioId;
     private int publicacionId;
@@ -13,6 +16,8 @@ public class Comentario {
 
     private boolean destacado;
     private boolean activa;
+    private String autorNombre;
+    private List<Comentario> comentarios = new ArrayList<>();
 
     // Para crear un comentario nuevo: el id lo genera la base de datos.
     public Comentario(String mensaje, String imagenUrl, LocalDate fechaPublicacion, int usuarioId, int publicacionId, Integer comentarioPadreId) {
@@ -63,6 +68,14 @@ public class Comentario {
         this.imagenUrl = imagenUrl;
     }
 
+    public String getImagenPublicId() {
+        return imagenPublicId;
+    }
+
+    public void setImagenPublicId(String imagenPublicId) {
+        this.imagenPublicId = imagenPublicId;
+    }
+
     public LocalDate getFechaPublicacion() {
         return fechaPublicacion;
     }
@@ -109,6 +122,22 @@ public class Comentario {
 
     public void setActiva(boolean activa) {
         this.activa = activa;
+    }
+
+    public String getAutorNombre() {
+        return autorNombre;
+    }
+
+    public void setAutorNombre(String autorNombre) {
+        this.autorNombre = autorNombre;
+    }
+
+    public List<Comentario> getComentarios() {
+        return comentarios;
+    }
+
+    public void setComentarios(List<Comentario> comentarios) {
+        this.comentarios = comentarios;
     }
 
     @Override

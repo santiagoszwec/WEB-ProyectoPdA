@@ -1,6 +1,7 @@
 package org.example.webproyectopda;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
 
@@ -79,7 +80,8 @@ public class Migracion {
                     "CREATE TABLE IF NOT EXISTS comentario (" +
                             "  id INT AUTO_INCREMENT PRIMARY KEY," +
                             "  mensaje TEXT NOT NULL," +
-                            "  imagen_url VARCHAR(255)," +
+                            "  imagen_url VARCHAR(1000)," +
+                            "  imagen_public_id VARCHAR(255)," +
                             "  fecha_publicacion DATE NOT NULL," +
                             "  usuario_id INT NOT NULL," +
                             "  publicacion_id INT NOT NULL," +
@@ -146,11 +148,30 @@ public class Migracion {
                 System.out.println("Tabla creada: " + nombreTabla);
             }
 
+            actualizarTablasExistentes(conn, stmt);
+
             System.out.println("Migracion completada exitosamente.");
 
         } catch (SQLException e) {
             System.err.println("Error en la migracion: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+
+    private static void actualizarTablasExistentes(Connection conn, Statement stmt) throws SQLException {
+
+        stmt.executeUpdate("ALTER TABLE comentario MODIFY COLUMN imagen_url VARCHAR(1000) NULL");
+
+        if (!existeColumna(conn, "comentario", "imagen_public_id")) {
+            stmt.executeUpdate("ALTER TABLE comentario ADD COLUMN imagen_public_id VARCHAR(255) NULL AFTER imagen_url");
+            System.out.println("Columna agregada: comentario.imagen_public_id");
+        }
+    }
+
+    private static boolean existeColumna(Connection conn, String tabla, String columna) throws SQLException {
+        try (ResultSet columnas = conn.getMetaData().getColumns(conn.getCatalog(), null, tabla, columna)) {
+            return columnas.next();
         }
     }
 

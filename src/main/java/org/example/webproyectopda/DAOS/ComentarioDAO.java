@@ -14,32 +14,49 @@ import java.util.Deque;
 
 public class ComentarioDAO {
 
-    public static boolean crear(Comentario comentario) {
+    public static boolean crear(Comentario comentario) throws SQLException {
+        try (Connection conexion = ConexionDB.obtenerConexion()) {
+            return insertar(conexion, comentario);
+        }
+    }
 
-        String sql = "INSERT INTO comentario (mensaje, imagen_url, fecha_publicacion, usuario_id, publicacion_id, comentario_padre_id, destacado) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    private static boolean insertar(Connection conexion, Comentario comentario) throws SQLException {
+        String sql = "INSERT INTO comentario (mensaje, imagen_url, imagen_public_id, fecha_publicacion, "
+                + "usuario_id, publicacion_id, comentario_padre_id, destacado) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conexion = ConexionDB.obtenerConexion();
-             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
-
+        try (PreparedStatement sentencia = conexion.prepareStatement(sql)) {
             sentencia.setString(1, comentario.getMensaje());
             sentencia.setString(2, comentario.getImagenUrl());
-            sentencia.setObject(3, comentario.getFechaPublicacion());
-            sentencia.setInt(4, comentario.getUsuarioId());
-            sentencia.setInt(5, comentario.getPublicacionId());
+            sentencia.setString(3, comentario.getImagenPublicId());
+            sentencia.setObject(4, comentario.getFechaPublicacion());
+            sentencia.setInt(5, comentario.getUsuarioId());
+            sentencia.setInt(6, comentario.getPublicacionId());
 
             if (comentario.getComentarioPadreId() != null) {
-                sentencia.setInt(6, comentario.getComentarioPadreId());
+                sentencia.setInt(7, comentario.getComentarioPadreId());
             } else {
-                sentencia.setNull(6, Types.INTEGER);
+                sentencia.setNull(7, Types.INTEGER);
             }
-            
-            sentencia.setBoolean(7, comentario.isDestacado());
 
+            sentencia.setBoolean(8, comentario.isDestacado());
             return sentencia.executeUpdate() == 1;
+        }
+    }
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public static void crearRespuesta(Comentario respuesta, Notificacion notificacion) throws SQLException {
+        try (Connection conexion = ConexionDB.obtenerConexion()) {
+            conexion.setAutoCommit(false);
+            try {
+                insertar(conexion, respuesta);
+                if (notificacion != null) {
+                    NotificacionDAO.insertarNotificacion(conexion, notificacion);
+                }
+                conexion.commit();
+            } catch (SQLException e) {
+                conexion.rollback();
+                throw e;
+            }
         }
     }
 
@@ -261,12 +278,36 @@ public class ComentarioDAO {
             throw new RuntimeException(e);
         }
     }
+    public static List<Comentario> listarDeDuda(int dudaId) throws SQLException {
+        List<Comentario> comentarios = new ArrayList<>();
+        String sql = "SELECT c.*, u.nombre AS autor_nombre "
+                + "FROM comentario c "
+                + "JOIN usuario u ON u.id = c.usuario_id "
+                + "WHERE c.publicacion_id = ? AND c.activa = TRUE "
+                + "ORDER BY c.destacado DESC, c.fecha_publicacion ASC, c.id ASC";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, dudaId);
+
+            try (ResultSet fila = sentencia.executeQuery()) {
+                while (fila.next()) {
+                    Comentario comentario = mapearComentario(fila);
+                    comentario.setAutorNombre(fila.getString("autor_nombre"));
+                    comentarios.add(comentario);
+                }
+            }
+        }
+        return comentarios;
+    }
+
     private static Comentario mapearComentario(ResultSet fila) throws SQLException {
 
         int padreId = fila.getInt("comentario_padre_id");
         Integer comentarioPadreId = fila.wasNull() ? null : padreId;
 
-        return new Comentario(
+        Comentario comentario = new Comentario(
                 fila.getInt("id"),
                 fila.getString("mensaje"),
                 fila.getString("imagen_url"),
@@ -277,5 +318,7 @@ public class ComentarioDAO {
                 fila.getBoolean("destacado"),
                 fila.getBoolean("activa")
         );
+        comentario.setImagenPublicId(fila.getString("imagen_public_id"));
+        return comentario;
     }
 }
