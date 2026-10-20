@@ -9,6 +9,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UsuarioDAO {
+
+    public static Usuario buscarPorId(int id) {
+        String sql = "SELECT * FROM usuario WHERE id = ? AND activo = TRUE";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, id);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                if (!filas.next()) {
+                    return null;
+                }
+                return new Usuario(
+                        filas.getInt("id"),
+                        filas.getString("nombre"),
+                        filas.getString("correo"),
+                        filas.getInt("anio_de_generacion"),
+                        TipoRol.valueOf(filas.getString("rol")),
+                        filas.getString("contrasenia"),
+                        filas.getBoolean("activo"));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static int crear(Usuario usuario) {
         try {
             Connection conexion = ConexionDB.obtenerConexion();

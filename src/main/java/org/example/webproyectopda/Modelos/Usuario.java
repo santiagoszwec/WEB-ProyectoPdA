@@ -81,6 +81,11 @@ public class Usuario {
         return activo;
     }
 
+    // Uso en las vistas: evita comparar el enum de rol desde JSP/EL.
+    public boolean isAdmin() {
+        return rol == TipoRol.Admin;
+    }
+
     public void setActivo(boolean activo) {
         this.activo = activo;
     }

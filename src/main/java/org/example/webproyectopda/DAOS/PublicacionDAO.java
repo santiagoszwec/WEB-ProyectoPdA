@@ -100,15 +100,15 @@ public class PublicacionDAO {
     }
 
     public static boolean actualizar(Publicacion publicacion) {
-        String sql = "UPDATE publicacion SET mensaje = ?, imagen_url = ?, fecha_publicacion = ? WHERE id = ?";
+        // La fecha de publicación no se modifica al editar.
+        String sql = "UPDATE publicacion SET mensaje = ?, imagen_url = ? WHERE id = ?";
         try {
             Connection conexion = ConexionDB.obtenerConexion();
             PreparedStatement sentencia = conexion.prepareStatement(sql);
 
             sentencia.setString(1, publicacion.getMensaje());
             sentencia.setString(2, publicacion.getImagenUrl());
-            sentencia.setObject(3, publicacion.getFechaPublicacion());
-            sentencia.setInt(4, publicacion.getId());
+            sentencia.setInt(3, publicacion.getId());
 
             int filasAfectadas = sentencia.executeUpdate();
 
@@ -173,6 +173,25 @@ public class PublicacionDAO {
             sentencia.setInt(2, id);
 
             return sentencia.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Categoría actual de una publicación que no es material (duda o mensaje).
+    public static TipoCategoria buscarCategoria(int id) {
+        String sql = esDuda(id)
+                ? "SELECT categoria FROM duda WHERE id = ?"
+                : "SELECT categoria FROM mensaje WHERE id = ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, id);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                return filas.next() ? TipoCategoria.valueOf(filas.getString("categoria")) : null;
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -466,89 +485,52 @@ public class PublicacionDAO {
     }
 
     public static List<Publicacion> listarMateriales(int usuarioId, int cursoId) {
+        return consultarMateriales(null, null, usuarioId, cursoId);
+    }
 
-        List<Publicacion> publicaciones = new ArrayList<>();
-
-        String sql = "SELECT p.*, m.archivo_url, m.tipo_material, m.tipo_archivo, m.tema FROM publicacion p " +
-                "INNER JOIN material m ON p.id = m.id INNER JOIN inscripcion i ON p.curso_id = i.curso_id " +
-                "WHERE p.activa = TRUE AND i.usuario_id = ? AND p.curso_id = ? ORDER BY p.fecha_publicacion";
-
-        try (Connection conexion = ConexionDB.obtenerConexion();
-            PreparedStatement sentencia = conexion.prepareStatement(sql)) {
-            sentencia.setInt(1, usuarioId);
-            sentencia.setInt(2, cursoId);
-            ResultSet filas = sentencia.executeQuery();
-            while (filas.next()) {
-                publicaciones.add(convertirMaterial(filas));
-            }
-            return publicaciones;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    // Listado sin filtro de usuario: lo usa el administrador, que no tiene inscripción.
+    public static List<Publicacion> listarMateriales(int cursoId) {
+        return consultarMateriales(null, null, null, cursoId);
     }
 
     public static List<Publicacion> filtrarMaterialesPorTipo(String tipoMaterial, int usuarioId, int cursoId) {
-
-        List<Publicacion> publicaciones = new ArrayList<>();
-
-        String sql = "SELECT p.*, m.archivo_url, m.tipo_material, m.tipo_archivo, m.tema FROM publicacion p " +
-                "INNER JOIN material m ON p.id = m.id INNER JOIN inscripcion i ON p.curso_id = i.curso_id " +
-                "WHERE p.activa = TRUE AND i.usuario_id = ? AND p.curso_id = ? AND m.tipo_material = ? " +
-                "ORDER BY p.fecha_publicacion";
-
-        try (Connection conexion = ConexionDB.obtenerConexion();
-             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
-
-            sentencia.setInt(1, usuarioId);
-            sentencia.setInt(2, cursoId);
-            sentencia.setString(3, tipoMaterial);
-
-            ResultSet filas = sentencia.executeQuery();
-
-            while (filas.next()) {
-                publicaciones.add(convertirMaterial(filas));
-            }
-            return publicaciones;
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return consultarMateriales(
+                List.of(TipoMaterial.valueOf(tipoMaterial)), null, usuarioId, cursoId);
     }
 
     public static List<Publicacion> filtrarMaterialesPorArchivo(String tipoArchivo, int usuarioId, int cursoId) {
-
-        List<Publicacion> publicaciones = new ArrayList<>();
-
-        String sql = "SELECT p.*, m.archivo_url, m.tipo_material, m.tipo_archivo, m.tema FROM publicacion p " +
-                "INNER JOIN material m ON p.id = m.id INNER JOIN inscripcion i ON p.curso_id = i.curso_id " +
-                "WHERE p.activa = TRUE AND i.usuario_id = ? AND p.curso_id = ? AND m.tipo_archivo = ? " +
-                "ORDER BY p.fecha_publicacion";
-
-        try (Connection conexion = ConexionDB.obtenerConexion();
-            PreparedStatement sentencia = conexion.prepareStatement(sql)) {
-            sentencia.setInt(1, usuarioId);
-            sentencia.setInt(2, cursoId);
-            sentencia.setString(3, tipoArchivo);
-
-            ResultSet filas = sentencia.executeQuery();
-
-            while (filas.next()) {
-                publicaciones.add(convertirMaterial(filas));
-            }
-            return publicaciones;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return consultarMateriales(
+                null, List.of(TipoArchivo.valueOf(tipoArchivo)), usuarioId, cursoId);
     }
 
     public static List<Publicacion> filtrarMaterialesPorEtiquetas(List<TipoMaterial> tiposMaterial, List<TipoArchivo> tiposArchivo, int usuarioId, int cursoId) {
+        return consultarMateriales(tiposMaterial, tiposArchivo, usuarioId, cursoId);
+    }
+
+    // Variante sin filtro de usuario: consulta todo el curso (uso del administrador).
+    public static List<Publicacion> filtrarMaterialesPorEtiquetas(List<TipoMaterial> tiposMaterial, List<TipoArchivo> tiposArchivo, int cursoId) {
+        return consultarMateriales(tiposMaterial, tiposArchivo, null, cursoId);
+    }
+
+    // Combina las etiquetas con OR dentro de cada dimensión y AND entre dimensiones.
+    // usuarioId null => consulta todo el curso sin exigir inscripción.
+    private static List<Publicacion> consultarMateriales(List<TipoMaterial> tiposMaterial,
+                                                         List<TipoArchivo> tiposArchivo,
+                                                         Integer usuarioId, int cursoId) {
 
         List<Publicacion> publicaciones = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder(
                 "SELECT p.*, m.archivo_url, m.tipo_material, m.tipo_archivo, m.tema FROM publicacion p " +
-                        "INNER JOIN material m ON p.id = m.id INNER JOIN inscripcion i ON p.curso_id = i.curso_id " +
-                        "WHERE p.activa = TRUE AND i.usuario_id = ? AND p.curso_id = ? ");
+                        "INNER JOIN material m ON p.id = m.id ");
+
+        if (usuarioId != null) {
+            sql.append("INNER JOIN inscripcion i ON p.curso_id = i.curso_id ");
+        }
+        sql.append("WHERE p.activa = TRUE AND p.curso_id = ? ");
+        if (usuarioId != null) {
+            sql.append("AND i.usuario_id = ? ");
+        }
 
         List<String> parametros = new ArrayList<>();
 
@@ -576,17 +558,19 @@ public class PublicacionDAO {
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql.toString())) {
 
-            sentencia.setInt(1, usuarioId);
-            sentencia.setInt(2, cursoId);
-
-            for (int i = 0; i < parametros.size(); i++) {
-                sentencia.setString(i + 3, parametros.get(i));
+            int posicion = 1;
+            sentencia.setInt(posicion++, cursoId);
+            if (usuarioId != null) {
+                sentencia.setInt(posicion++, usuarioId);
+            }
+            for (String parametro : parametros) {
+                sentencia.setString(posicion++, parametro);
             }
 
-            ResultSet filas = sentencia.executeQuery();
-
-            while (filas.next()) {
-                publicaciones.add(convertirMaterial(filas));
+            try (ResultSet filas = sentencia.executeQuery()) {
+                while (filas.next()) {
+                    publicaciones.add(convertirMaterial(filas));
+                }
             }
             return publicaciones;
 
@@ -636,15 +620,97 @@ public class PublicacionDAO {
                 TipoCategoria.valueOf(fila.getString("categoria_mensaje")));
     }
 
+    // Todas las publicaciones (activas y dadas de baja) para la gestión del administrador.
+    public static List<PublicacionFeed> listarTodas() {
+        List<PublicacionFeed> retorno = new ArrayList<>();
+
+        String sql = "SELECT p.id, p.usuario_id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, " +
+                "c.nombre AS curso, u.nombre AS autor, " +
+                "CASE WHEN d.id IS NOT NULL THEN 'Duda' " +
+                "     WHEN m.id IS NOT NULL THEN 'Mensaje' " +
+                "     WHEN ma.id IS NOT NULL THEN 'Material' " +
+                "     ELSE 'Publicación' END AS tipo, " +
+                "COALESCE(d.categoria, m.categoria) AS categoria, d.estado AS estado " +
+                "FROM publicacion p " +
+                "LEFT JOIN curso c ON c.id = p.curso_id " +
+                "LEFT JOIN usuario u ON u.id = p.usuario_id " +
+                "LEFT JOIN duda d ON d.id = p.id " +
+                "LEFT JOIN mensaje m ON m.id = p.id " +
+                "LEFT JOIN material ma ON ma.id = p.id " +
+                "ORDER BY p.fecha_publicacion DESC, p.id DESC";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql);
+             ResultSet filas = sentencia.executeQuery()) {
+
+            while (filas.next()) {
+                retorno.add(convertirFeed(filas));
+            }
+            return retorno;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Buscador del foro: dudas de los cursos donde el usuario está inscripto,
+    // filtradas por texto (en el mensaje) y/o por categoría.
+    public static List<PublicacionFeed> buscarDudas(int usuarioId, String texto, String categoria) {
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT p.id, p.usuario_id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, " +
+                        "c.nombre AS curso, u.nombre AS autor, 'Duda' AS tipo, " +
+                        "d.categoria AS categoria, d.estado AS estado " +
+                        "FROM publicacion p " +
+                        "INNER JOIN duda d ON d.id = p.id " +
+                        "INNER JOIN inscripcion i ON i.curso_id = p.curso_id " +
+                        "LEFT JOIN curso c ON c.id = p.curso_id " +
+                        "LEFT JOIN usuario u ON u.id = p.usuario_id " +
+                        "WHERE p.activa = TRUE AND i.usuario_id = ? ");
+
+        List<String> parametros = new ArrayList<>();
+
+        if (texto != null && !texto.isBlank()) {
+            sql.append("AND p.mensaje LIKE ? ");
+            parametros.add("%" + texto.trim() + "%");
+        }
+        if (categoria != null && !categoria.isBlank()) {
+            sql.append("AND d.categoria = ? ");
+            parametros.add(categoria.trim());
+        }
+        sql.append("ORDER BY p.fecha_publicacion DESC, p.id DESC");
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql.toString())) {
+
+            sentencia.setInt(1, usuarioId);
+            for (int i = 0; i < parametros.size(); i++) {
+                sentencia.setString(i + 2, parametros.get(i));
+            }
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                List<PublicacionFeed> retorno = new ArrayList<>();
+                while (filas.next()) {
+                    retorno.add(convertirFeed(filas));
+                }
+                return retorno;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static List<PublicacionFeed> listarFeedPorCurso(int cursoId) {
         List<PublicacionFeed> retorno = new ArrayList<>();
-        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, u.nombre AS autor, "
+        String sql = "SELECT p.id, p.usuario_id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, c.nombre AS curso, u.nombre AS autor, "
                 + "CASE WHEN d.id IS NOT NULL THEN 'Duda' "
                 + "     WHEN m.id IS NOT NULL THEN 'Mensaje' "
                 + "     WHEN ma.id IS NOT NULL THEN 'Material' "
                 + "     ELSE 'Publicación' END AS tipo, "
                 + "COALESCE(d.categoria, m.categoria) AS categoria, d.estado AS estado "
                 + "FROM publicacion p "
+                + "LEFT JOIN curso c ON c.id = p.curso_id "
                 + "LEFT JOIN usuario u ON u.id = p.usuario_id "
                 + "LEFT JOIN duda d ON d.id = p.id "
                 + "LEFT JOIN mensaje m ON m.id = p.id "
@@ -659,22 +725,29 @@ public class PublicacionDAO {
 
             try (ResultSet filas = sentencia.executeQuery()) {
                 while (filas.next()) {
-                    PublicacionFeed publicacion = new PublicacionFeed();
-                    publicacion.setId(filas.getInt("id"));
-                    publicacion.setMensaje(filas.getString("mensaje"));
-                    publicacion.setImagenUrl(filas.getString("imagen_url"));
-                    publicacion.setFechaPublicacion(filas.getObject("fecha_publicacion", LocalDate.class));
-                    publicacion.setAutor(filas.getString("autor"));
-                    publicacion.setTipo(filas.getString("tipo"));
-                    publicacion.setCategoria(filas.getString("categoria"));
-                    publicacion.setEstado(filas.getString("estado"));
-                    retorno.add(publicacion);
+                    retorno.add(convertirFeed(filas));
                 }
             }
             return retorno;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static PublicacionFeed convertirFeed(ResultSet filas) throws SQLException {
+        PublicacionFeed publicacion = new PublicacionFeed();
+        publicacion.setId(filas.getInt("id"));
+        publicacion.setUsuarioId(filas.getInt("usuario_id"));
+        publicacion.setMensaje(filas.getString("mensaje"));
+        publicacion.setImagenUrl(filas.getString("imagen_url"));
+        publicacion.setFechaPublicacion(filas.getObject("fecha_publicacion", LocalDate.class));
+        publicacion.setAutor(filas.getString("autor"));
+        publicacion.setTipo(filas.getString("tipo"));
+        publicacion.setCategoria(filas.getString("categoria"));
+        publicacion.setEstado(filas.getString("estado"));
+        publicacion.setCurso(filas.getString("curso"));
+        publicacion.setActiva(filas.getBoolean("activa"));
+        return publicacion;
     }
 }
 

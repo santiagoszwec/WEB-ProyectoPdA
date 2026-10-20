@@ -2,7 +2,10 @@ package org.example.webproyectopda.DAOS;
 
 import org.example.webproyectopda.ConexionDB;
 import org.example.webproyectopda.ENUMS.TipoEstado;
+import org.example.webproyectopda.ENUMS.TipoRol;
+import org.example.webproyectopda.Modelos.Curso;
 import org.example.webproyectopda.Modelos.Inscripcion;
+import org.example.webproyectopda.Modelos.Usuario;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -75,6 +78,23 @@ public class InscripcionDAO {
 
             try (ResultSet fila = sentencia.executeQuery()) {
                 return fila.next();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Inscripcion buscarPorId(int inscripcionId) {
+        String sql = "SELECT * FROM inscripcion WHERE id = ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, inscripcionId);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                return filas.next() ? mapearInscripcion(filas) : null;
             }
 
         } catch (SQLException e) {
@@ -217,6 +237,95 @@ public class InscripcionDAO {
         }
     }
 
+    // ¿Ambos usuarios están inscriptos en al menos un curso activo?
+    public static boolean existeCursoEnComun(int usuarioA, int usuarioB) {
+        String sql = "SELECT 1 FROM inscripcion a " +
+                "INNER JOIN inscripcion b ON b.curso_id = a.curso_id AND b.usuario_id = ? " +
+                "INNER JOIN curso c ON c.id = a.curso_id AND c.activo = TRUE " +
+                "WHERE a.usuario_id = ? LIMIT 1";
 
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
 
+            sentencia.setInt(1, usuarioB);
+            sentencia.setInt(2, usuarioA);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                return filas.next();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Cursos compartidos, con el estado de inscripción del usuario objetivo.
+    public static List<Curso> listarEnComun(int usuarioObjetivo, int usuarioConsulta) {
+        String sql = "SELECT c.*, i1.estado AS estado_inscripcion FROM inscripcion i1 " +
+                "INNER JOIN inscripcion i2 ON i2.curso_id = i1.curso_id AND i2.usuario_id = ? " +
+                "INNER JOIN curso c ON c.id = i1.curso_id AND c.activo = TRUE " +
+                "WHERE i1.usuario_id = ? " +
+                "ORDER BY c.anio DESC, c.semestre DESC, c.nombre";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, usuarioConsulta);
+            sentencia.setInt(2, usuarioObjetivo);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                List<Curso> cursos = new ArrayList<>();
+                while (filas.next()) {
+                    Curso curso = new Curso(
+                            filas.getInt("id"),
+                            filas.getString("nombre"),
+                            filas.getInt("semestre"),
+                            filas.getInt("anio"),
+                            filas.getInt("creditos"),
+                            filas.getString("descripcion"),
+                            filas.getBoolean("activo"));
+                    curso.setEstadoInscripcion(filas.getString("estado_inscripcion"));
+                    cursos.add(curso);
+                }
+                return cursos;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Estudiantes con inscripción activa en "Cursando" de un curso, sin incluir al consultante.
+    public static List<Usuario> listarCompanierosCursando(int cursoId, int usuarioId) {
+        String sql = "SELECT u.* FROM usuario u " +
+                "INNER JOIN inscripcion i ON i.usuario_id = u.id " +
+                "WHERE i.curso_id = ? AND i.estado = ? AND u.activo = TRUE AND u.id <> ? " +
+                "ORDER BY u.nombre";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, cursoId);
+            sentencia.setString(2, TipoEstado.Cursando.name());
+            sentencia.setInt(3, usuarioId);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                List<Usuario> companieros = new ArrayList<>();
+                while (filas.next()) {
+                    companieros.add(new Usuario(
+                            filas.getInt("id"),
+                            filas.getString("nombre"),
+                            filas.getString("correo"),
+                            filas.getInt("anio_de_generacion"),
+                            TipoRol.valueOf(filas.getString("rol")),
+                            filas.getString("contrasenia"),
+                            filas.getBoolean("activo")));
+                }
+                return companieros;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

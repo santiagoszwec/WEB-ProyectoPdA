@@ -2,10 +2,13 @@ package org.example.webproyectopda.Servlets;
 
 import org.example.webproyectopda.DAOS.*;
 import org.example.webproyectopda.ENUMS.EstadoDuda;
+import org.example.webproyectopda.ENUMS.TipoArchivo;
 import org.example.webproyectopda.ENUMS.TipoCategoria;
+import org.example.webproyectopda.ENUMS.TipoMaterial;
 import org.example.webproyectopda.ENUMS.TipoNotificacion;
 import org.example.webproyectopda.ENUMS.TipoRol;
 import org.example.webproyectopda.Modelos.*;
+import org.example.webproyectopda.Utilidades.Validaciones;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,8 +17,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +24,7 @@ import java.util.List;
 @WebServlet("/curso")
 public class CursoServlet extends HttpServlet {
 
-    private static final int MAX_MENSAJE = 2000;
-    private static final int MAX_URL = 255;
+    private static final int MAX_MENSAJE = Validaciones.MAX_MENSAJE;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -93,7 +93,8 @@ public class CursoServlet extends HttpServlet {
                 return;
             }
 
-            if (!InscripcionDAO.existeInscripcion(usuario.getId(), curso.getId())) {
+            if (usuario.getRol() != TipoRol.Admin
+                    && !InscripcionDAO.existeInscripcion(usuario.getId(), curso.getId())) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "No podés publicar en este curso");
                 return;
             }
@@ -110,7 +111,13 @@ public class CursoServlet extends HttpServlet {
             String tipo = request.getParameter("tipo");
             String categoriaTexto = request.getParameter("categoria");
 
-            List<String> errores = validar(mensaje, adjuntar, imagenUrl, tipo, categoriaTexto);
+            String archivoUrl = request.getParameter("archivoUrl");
+            String tipoMaterialTexto = request.getParameter("tipoMaterial");
+            String tipoArchivoTexto = request.getParameter("tipoArchivo");
+            String tema = request.getParameter("tema");
+
+            List<String> errores = validar(usuario, mensaje, adjuntar, imagenUrl, tipo,
+                    categoriaTexto, archivoUrl, tipoMaterialTexto, tipoArchivoTexto, tema);
 
             if (!errores.isEmpty()) {
 
@@ -120,28 +127,51 @@ public class CursoServlet extends HttpServlet {
                 request.setAttribute("valorImagenUrl", imagenUrl);
                 request.setAttribute("valorTipo", tipo);
                 request.setAttribute("valorCategoria", categoriaTexto);
+                request.setAttribute("valorArchivoUrl", archivoUrl);
+                request.setAttribute("valorTipoMaterial", tipoMaterialTexto);
+                request.setAttribute("valorTipoArchivo", tipoArchivoTexto);
+                request.setAttribute("valorTema", tema);
                 mostrarCurso(request, response, curso, usuario);
                 return;
             }
 
-
-            TipoCategoria categoria = TipoCategoria.valueOf(categoriaTexto);
             String urlFinal = adjuntar ? imagenUrl.trim() : null;
-            boolean esDuda = "Duda".equals(tipo);
 
             Publicacion publicacion;
             boolean guardada;
-            if (esDuda) {
+            TipoNotificacion tipoNotificacion;
+            String etiquetaNotificacion;
 
-                Duda duda = new Duda(EstadoDuda.Abierta, categoria, usuario.getId(), curso.getId());
+            if ("Duda".equals(tipo)) {
+
+                Duda duda = new Duda(EstadoDuda.Abierta,
+                        TipoCategoria.valueOf(categoriaTexto), usuario.getId(), curso.getId());
                 completarPublicacion(duda, mensaje, urlFinal);
                 guardada = DudaDAO.crear(duda);
                 publicacion = duda;
+                tipoNotificacion = TipoNotificacion.Duda;
+                etiquetaNotificacion = "Nueva duda";
+
+            } else if ("Material".equals(tipo)) {
+
+                Material material = new Material(archivoUrl.trim(),
+                        TipoMaterial.valueOf(tipoMaterialTexto),
+                        TipoArchivo.valueOf(tipoArchivoTexto),
+                        tema.trim(), usuario.getId(), curso.getId());
+                completarPublicacion(material, mensaje, urlFinal);
+                guardada = MaterialDAO.crear(material);
+                publicacion = material;
+                tipoNotificacion = TipoNotificacion.Material;
+                etiquetaNotificacion = "Nuevo material";
+
             } else {
-                Mensaje m = new Mensaje(categoria, usuario.getId(), curso.getId());
+
+                Mensaje m = new Mensaje(TipoCategoria.valueOf(categoriaTexto), usuario.getId(), curso.getId());
                 completarPublicacion(m, mensaje, urlFinal);
                 guardada = MensajeDAO.crear(m);
                 publicacion = m;
+                tipoNotificacion = TipoNotificacion.Mensaje;
+                etiquetaNotificacion = "Nuevo mensaje";
             }
 
             if (!guardada) {
@@ -150,7 +180,7 @@ public class CursoServlet extends HttpServlet {
                 return;
             }
 
-            notificarCompanieros(publicacion, esDuda, usuario, curso);
+            notificarCompanieros(publicacion, tipoNotificacion, etiquetaNotificacion, usuario, curso);
 
             request.getSession(false).setAttribute("mensajeExito", "La publicación se creó correctamente.");
             response.sendRedirect(request.getContextPath() + "/curso?id=" + curso.getId());
@@ -160,17 +190,17 @@ public class CursoServlet extends HttpServlet {
         }
     }
 
-    private List<String> validar(String mensaje, boolean adjuntar, String imagenUrl,
-                                 String tipo, String categoria) {
+    private List<String> validar(Usuario usuario, String mensaje, boolean adjuntar, String imagenUrl,
+                                 String tipo, String categoria, String archivoUrl,
+                                 String tipoMaterial, String tipoArchivo, String tema) {
         List<String> errores = new ArrayList<>();
-
+        boolean esAdmin = usuario.getRol() == TipoRol.Admin;
 
         if (mensaje == null || mensaje.isBlank()) {
             errores.add("El mensaje no puede estar vacío.");
         } else if (mensaje.trim().length() > MAX_MENSAJE) {
             errores.add("El mensaje no puede superar los " + MAX_MENSAJE + " caracteres.");
         }
-
 
         if (adjuntar) {
             if (imagenUrl == null || imagenUrl.isBlank()) {
@@ -180,37 +210,54 @@ public class CursoServlet extends HttpServlet {
             }
         }
 
-        if (!"Duda".equals(tipo) && !"Mensaje".equals(tipo)) {
-            errores.add("Seleccioná un tipo de publicación válido: Duda o Mensaje.");
+        boolean esDuda = "Duda".equals(tipo);
+        boolean esMensaje = "Mensaje".equals(tipo);
+        boolean esMaterial = "Material".equals(tipo);
+
+        if (!esDuda && !esMensaje && !esMaterial) {
+            errores.add("Seleccioná un tipo de publicación válido: Duda o Mensaje"
+                    + (esAdmin ? " o Material." : "."));
         }
-        boolean categoriaValida = false;
-        if (categoria != null) {
-            for (TipoCategoria c : TipoCategoria.values()) {
-                if (c.name().equals(categoria)) {
-                    categoriaValida = true;
-                }
+
+        if (esMaterial && !esAdmin) {
+            errores.add("Solo el administrador puede publicar material.");
+        }
+
+        if (esMaterial) {
+            if (archivoUrl == null || archivoUrl.isBlank()) {
+                errores.add("Ingresá la URL del archivo del material.");
+            } else if (!urlValida(archivoUrl.trim())) {
+                errores.add("La URL del archivo debe comenzar con http:// o https:// y tener un formato correcto.");
+            }
+
+            if (!esEnumValido(TipoMaterial.class, tipoMaterial)) {
+                errores.add("Seleccioná un tipo de material válido: Apuntes, Ejercicio, Libro o Video.");
+            }
+            if (!esEnumValido(TipoArchivo.class, tipoArchivo)) {
+                errores.add("Seleccioná un tipo de archivo válido: JPG, PDF o PNG.");
+            }
+
+            if (tema == null || tema.isBlank()) {
+                errores.add("Ingresá el tema del material.");
+            } else if (tema.trim().length() > 100) {
+                errores.add("El tema no puede superar los 100 caracteres.");
+            }
+
+        } else if (esDuda || esMensaje) {
+            if (!esEnumValido(TipoCategoria.class, categoria)) {
+                errores.add("Seleccioná una categoría válida: Ejercicio, Examen o Reunión.");
             }
         }
-        if (!categoriaValida) {
-            errores.add("Seleccioná una categoría válida: Ejercicio, Examen o Reunión.");
-        }
+
         return errores;
     }
 
+    private <E extends Enum<E>> boolean esEnumValido(Class<E> tipoEnum, String valor) {
+        return Validaciones.enumValido(tipoEnum, valor);
+    }
+
     private boolean urlValida(String url) {
-        if (url.length() > MAX_URL) {
-            return false;
-        }
-        String minusculas = url.toLowerCase();
-        if (!minusculas.startsWith("http://") && !minusculas.startsWith("https://")) {
-            return false;
-        }
-        try {
-            URI uri = new URI(url);
-            return uri.getHost() != null && !uri.getHost().isBlank();
-        } catch (URISyntaxException e) {
-            return false;
-        }
+        return Validaciones.urlValida(url);
     }
 
     private void completarPublicacion(Publicacion publicacion, String mensaje, String imagenUrl) {
@@ -219,10 +266,9 @@ public class CursoServlet extends HttpServlet {
         publicacion.setFechaPublicacion(LocalDate.now());
     }
 
-    private void notificarCompanieros(Publicacion publicacion, boolean esDuda, Usuario autor, Curso curso) {
-        String texto = (esDuda ? "Nueva duda" : "Nuevo mensaje")
-                + " en " + curso.getNombre() + ", publicado por " + autor.getNombre() + ".";
-        TipoNotificacion tipo = esDuda ? TipoNotificacion.Duda : TipoNotificacion.Mensaje;
+    private void notificarCompanieros(Publicacion publicacion, TipoNotificacion tipo,
+                                      String etiqueta, Usuario autor, Curso curso) {
+        String texto = etiqueta + " en " + curso.getNombre() + ", publicado por " + autor.getNombre() + ".";
 
         for (int idCompanero : InscripcionDAO.listarUsuariosCursando(curso.getId())) {
             if (idCompanero == autor.getId()) {
@@ -242,14 +288,69 @@ public class CursoServlet extends HttpServlet {
                               Curso curso, Usuario usuario) throws ServletException, IOException {
         request.setAttribute("curso", curso);
         request.setAttribute("publicaciones", PublicacionDAO.listarFeedPorCurso(curso.getId()));
+        request.setAttribute("esAdmin", usuario.getRol() == TipoRol.Admin);
 
-        // El formulario solo aparece para usuarios inscriptos en un curso del año actual
+        cargarMateriales(request, usuario, curso);
+
+        // El formulario solo aparece para administradores y usuarios inscriptos
+        // en un curso del año actual
         boolean delAnioActual = esDelAnioActual(curso);
         boolean inscripto = InscripcionDAO.existeInscripcion(usuario.getId(), curso.getId());
-        request.setAttribute("puedePublicar", delAnioActual && inscripto);
+        boolean esAdmin = usuario.getRol() == TipoRol.Admin;
+        request.setAttribute("puedePublicar", delAnioActual && (esAdmin || inscripto));
         request.setAttribute("cursoDelAnioActual", delAnioActual);
 
+        // Compañeros que cursan la materia, para acceder a sus perfiles públicos
+        if (!esAdmin) {
+            request.setAttribute("companieros",
+                    InscripcionDAO.listarCompanierosCursando(curso.getId(), usuario.getId()));
+        }
+
         request.getRequestDispatcher("/curso.jsp").forward(request, response);
+    }
+
+    // Sección "Material de Estudio": lista filtrada por las etiquetas elegidas en el request.
+    private void cargarMateriales(HttpServletRequest request, Usuario usuario, Curso curso) {
+        List<TipoMaterial> tiposMaterial =
+                parsearEnums(request.getParameterValues("tipoMaterial"), TipoMaterial.class);
+        List<TipoArchivo> tiposArchivo =
+                parsearEnums(request.getParameterValues("tipoArchivo"), TipoArchivo.class);
+
+        List<Publicacion> materiales;
+        if (usuario.getRol() == TipoRol.Admin) {
+            materiales = PublicacionDAO.filtrarMaterialesPorEtiquetas(
+                    tiposMaterial, tiposArchivo, curso.getId());
+        } else {
+            materiales = PublicacionDAO.filtrarMaterialesPorEtiquetas(
+                    tiposMaterial, tiposArchivo, usuario.getId(), curso.getId());
+        }
+
+        request.setAttribute("materiales", materiales);
+        request.setAttribute("filtroTipoMaterial", tiposMaterial);
+        request.setAttribute("filtroTipoArchivo", tiposArchivo);
+        request.setAttribute("tiposMaterialDisponibles", TipoMaterial.values());
+        request.setAttribute("tiposArchivoDisponibles", TipoArchivo.values());
+    }
+
+    private <E extends Enum<E>> List<E> parsearEnums(String[] valores, Class<E> tipoEnum) {
+        List<E> retorno = new ArrayList<>();
+        if (valores == null) {
+            return retorno;
+        }
+        for (String valor : valores) {
+            if (valor == null || valor.isBlank()) {
+                continue;
+            }
+            try {
+                E enumValor = Enum.valueOf(tipoEnum, valor.trim());
+                if (!retorno.contains(enumValor)) {
+                    retorno.add(enumValor);
+                }
+            } catch (IllegalArgumentException e) {
+                // valor desconocido: se ignora en lugar de romper la consulta
+            }
+        }
+        return retorno;
     }
 
     private boolean esDelAnioActual(Curso curso) {

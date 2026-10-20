@@ -13,9 +13,23 @@
                     Mis cursos
                 </a>
                 <a class="nav-link"
+                   href="${pageContext.request.contextPath}/misHoras">
+                    Mis horas de estudio
+                </a>
+                <a class="nav-link"
                    href="${pageContext.request.contextPath}/notificaciones">
                     Notificaciones
                 </a>
+                <a class="nav-link"
+                   href="${pageContext.request.contextPath}/foro">
+                    Foro
+                </a>
+                <c:if test="${sessionScope.usuarioLogueado.admin}">
+                    <a class="nav-link"
+                       href="${pageContext.request.contextPath}/gestionPublicaciones">
+                        Gestión de publicaciones
+                    </a>
+                </c:if>
             </nav>
         </div>
     </div>
