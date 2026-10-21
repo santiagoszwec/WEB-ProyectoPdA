@@ -250,32 +250,55 @@ public class PublicacionDAO {
         }
     }
 
-    public static List<Publicacion> listarUltimas(int usuarioId) {
-        List<Publicacion> publicaciones = new ArrayList<>();
+    public static List<PublicacionFeed> listarUltimas(int usuarioId) {
+        List<PublicacionFeed> retorno = new ArrayList<>();
 
-        String sql = "SELECT p.*, c.nombre AS nombre_curso, u.nombre AS nombre_autor FROM publicacion p " +
-                "INNER JOIN inscripcion i ON i.curso_id = p.curso_id INNER JOIN curso c ON c.id = p.curso_id " +
-                "LEFT JOIN usuario u ON u.id = p.usuario_id WHERE i.usuario_id = ? AND p.activa = TRUE AND c.activo = TRUE " +
-                "ORDER BY p.fecha_publicacion DESC, p.id DESC LIMIT 10";
+        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, " +
+                "p.curso_id, c.nombre AS nombre_curso, u.nombre AS autor, " +
+                "CASE WHEN d.id IS NOT NULL THEN 'Duda' " +
+                "     WHEN m.id IS NOT NULL THEN 'Mensaje' " +
+                "     WHEN ma.id IS NOT NULL THEN 'Material' " +
+                "     ELSE 'Publicación' END AS tipo, " +
+                "COALESCE(d.categoria, m.categoria) AS categoria, " +
+                "d.estado AS estado " +
+                "FROM publicacion p " +
+                "INNER JOIN inscripcion i ON i.curso_id = p.curso_id " +
+                "INNER JOIN curso c ON c.id = p.curso_id " +
+                "LEFT JOIN usuario u ON u.id = p.usuario_id " +
+                "LEFT JOIN duda d ON d.id = p.id " +
+                "LEFT JOIN mensaje m ON m.id = p.id " +
+                "LEFT JOIN material ma ON ma.id = p.id " +
+                "WHERE i.usuario_id = ? " +
+                "AND p.activa = TRUE AND c.activo = TRUE " +
+                "ORDER BY p.fecha_publicacion DESC, p.id DESC " +
+                "LIMIT 10";
 
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
             sentencia.setInt(1, usuarioId);
 
             try (ResultSet filas = sentencia.executeQuery()) {
                 while (filas.next()) {
-                    Publicacion publicacion = new Publicacion(
-                            filas.getInt("id"),
-                            filas.getString("mensaje"),
-                            filas.getString("imagen_url"),
-                            filas.getObject("fecha_publicacion", LocalDate.class),
-                            !filas.getBoolean("activa"),
-                            filas.getInt("usuario_id"),
-                            filas.getInt("curso_id"));
-                    publicaciones.add(publicacion);
+                    PublicacionFeed publicacion = new PublicacionFeed();
+
+                    publicacion.setId(filas.getInt("id"));
+                    publicacion.setMensaje(filas.getString("mensaje"));
+                    publicacion.setImagenUrl(filas.getString("imagen_url"));
+                    publicacion.setFechaPublicacion(filas.getObject("fecha_publicacion", LocalDate.class));
+                    publicacion.setAutor(filas.getString("autor"));
+                    publicacion.setTipo(filas.getString("tipo"));
+                    publicacion.setCategoria(filas.getString("categoria"));
+                    publicacion.setEstado(filas.getString("estado"));
+                    publicacion.setCursoId(filas.getInt("curso_id"));
+                    publicacion.setNombreCurso(filas.getString("nombre_curso"));
+
+                    retorno.add(publicacion);
                 }
             }
-            return publicaciones;
+
+            return retorno;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

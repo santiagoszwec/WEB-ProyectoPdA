@@ -26,6 +26,10 @@
                    href="${pageContext.request.contextPath}/foro">
                     Foro
                 </a>
+                <a class="nav-link"
+                   href="${pageContext.request.contextPath}/inscripciones">
+                    Inscribirme a curso
+                </a>
                 <c:if test="${sessionScope.usuarioLogueado.admin}">
                     <a class="nav-link"
                        href="${pageContext.request.contextPath}/gestionPublicaciones">

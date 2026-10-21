@@ -49,6 +49,10 @@ public class RegistroServlet extends HttpServlet {
                 request.getRequestDispatcher("/registro.jsp").forward(request, response);
                 return;
             }
+            if (anioDeGeneracion < 2008 || anioDeGeneracion > 2027) {
+                request.setAttribute("error", "Año inválido.");
+                request.getRequestDispatcher("/registro.jsp").forward(request, response);
+            }
 
             Usuario usuario = new Usuario(nombre.trim(), correo.trim(), anioDeGeneracion,
                     TipoRol.Estudiante, password);

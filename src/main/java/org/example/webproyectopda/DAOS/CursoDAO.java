@@ -1,6 +1,7 @@
 package org.example.webproyectopda.DAOS;
 
 import org.example.webproyectopda.ConexionDB;
+import org.example.webproyectopda.ENUMS.TipoEstado;
 import org.example.webproyectopda.Modelos.Curso;
 
 import java.sql.Connection;
@@ -121,6 +122,7 @@ public class CursoDAO {
         }
     }
 
+    //lista los cursos a los que esta inscripto ese usuario
     public static List<Curso> listarPorUsuario(int usuarioId) {
         List<Curso> cursos = new ArrayList<>();
         String sql = "SELECT c.*, i.estado AS estado_inscripcion FROM curso c INNER JOIN inscripcion i ON i.curso_id = c.id " +
@@ -141,6 +143,81 @@ public class CursoDAO {
                             resultado.getString("descripcion"),
                             resultado.getBoolean("activo"));
                     curso.setEstadoInscripcion(resultado.getString("estado_inscripcion"));
+                    cursos.add(curso);
+                }
+            }
+            return cursos;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //lista los cursos por el nombre y su estado
+    public static List<Curso> listarPorUsuarioFiltrado(int usuarioId, String texto, TipoEstado estado) {
+        List<Curso> cursos = new ArrayList<>();
+        String sql = "SELECT c.*, i.estado AS estado_inscripcion FROM curso c "
+                + "INNER JOIN inscripcion i ON i.curso_id = c.id "
+                + "WHERE i.usuario_id = ? AND c.activo = TRUE";
+        if (texto != null && !texto.isBlank()) { //si escribis algo en el buscador
+            sql += " AND c.nombre LIKE ?";
+        }
+        if (estado != null) {
+            sql += " AND i.estado = ?";
+        }
+        sql += " ORDER BY c.anio DESC, c.semestre DESC, c.nombre"; //solo si elegis un estado
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            int posicion = 1;
+            sentencia.setInt(posicion++, usuarioId);
+            if (texto != null && !texto.isBlank()) {
+                sentencia.setString(posicion++, "%" + texto.trim() + "%");
+            }
+            if (estado != null) {
+                sentencia.setString(posicion++, estado.name());
+            }
+
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    Curso curso = new Curso(resultado.getInt("id"),
+                            resultado.getString("nombre"),
+                            resultado.getInt("semestre"),
+                            resultado.getInt("anio"),
+                            resultado.getInt("creditos"),
+                            resultado.getString("descripcion"),
+                            resultado.getBoolean("activo"));
+                    curso.setEstadoInscripcion(resultado.getString("estado_inscripcion"));
+                    cursos.add(curso);
+                }
+            }
+            return cursos;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static List<Curso> listarDisponiblesParaInscripcion(int usuarioId, int anio) {
+        List<Curso> cursos = new ArrayList<>();
+
+        String sql = "SELECT c.* FROM curso c WHERE c.activo = TRUE AND c.anio = ? " +
+                "AND NOT EXISTS (SELECT 1 FROM inscripcion i WHERE i.usuario_id = ? AND i.curso_id = c.id) " +
+                "ORDER BY c.semestre, c.nombre";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, anio);
+            sentencia.setInt(2, usuarioId);
+
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    Curso curso = new Curso(resultado.getInt("id"),
+                            resultado.getString("nombre"),
+                            resultado.getInt("semestre"),
+                            resultado.getInt("anio"),
+                            resultado.getInt("creditos"),
+                            resultado.getString("descripcion"),
+                            resultado.getBoolean("activo"));
                     cursos.add(curso);
                 }
             }

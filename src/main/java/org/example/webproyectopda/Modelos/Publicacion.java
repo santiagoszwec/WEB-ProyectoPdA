@@ -14,6 +14,7 @@ public class Publicacion {
     private int usuarioId;
     private int cursoId;
     private String autorNombre;
+    private String nombreCurso;
 
     public Publicacion() {
     }
@@ -100,6 +101,13 @@ public class Publicacion {
         this.autorNombre = autorNombre;
     }
 
+    public String getNombreCurso() {
+        return nombreCurso;
+    }
+
+    public void setNombreCurso(String nombreCurso) {
+        this.nombreCurso = nombreCurso;
+    }
 
     @Override
     public String toString() {

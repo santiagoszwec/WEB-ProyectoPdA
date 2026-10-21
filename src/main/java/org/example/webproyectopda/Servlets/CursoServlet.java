@@ -1,12 +1,7 @@
 package org.example.webproyectopda.Servlets;
 
 import org.example.webproyectopda.DAOS.*;
-import org.example.webproyectopda.ENUMS.EstadoDuda;
-import org.example.webproyectopda.ENUMS.TipoArchivo;
-import org.example.webproyectopda.ENUMS.TipoCategoria;
-import org.example.webproyectopda.ENUMS.TipoMaterial;
-import org.example.webproyectopda.ENUMS.TipoNotificacion;
-import org.example.webproyectopda.ENUMS.TipoRol;
+import org.example.webproyectopda.ENUMS.*;
 import org.example.webproyectopda.Modelos.*;
 import org.example.webproyectopda.Utilidades.Validaciones;
 import jakarta.servlet.ServletException;
@@ -306,6 +301,8 @@ public class CursoServlet extends HttpServlet {
                     InscripcionDAO.listarCompanierosCursando(curso.getId(), usuario.getId()));
         }
 
+        TipoEstado estadoCurso = InscripcionDAO.obtenerEstado(usuario.getId(), curso.getId());
+        request.setAttribute("estadoCurso", estadoCurso == null ? null : estadoCurso.name());
         request.getRequestDispatcher("/curso.jsp").forward(request, response);
     }
 
