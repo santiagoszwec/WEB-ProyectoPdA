@@ -15,6 +15,8 @@ public class Publicacion {
     private int cursoId;
     private String autorNombre;
     private String nombreCurso;
+    private String titulo;
+    private LocalDate fechaLimite;
 
     public Publicacion() {
     }
@@ -35,6 +37,20 @@ public class Publicacion {
         this.dadaDeBaja = dadaDeBaja;
         this.usuarioId = usuarioId;
         this.cursoId = cursoId;
+    }
+
+    public Publicacion(int id, String mensaje, String imagenUrl, LocalDate fechaPublicacion, boolean dadaDeBaja, int usuarioId, int cursoId, String autorNombre, String nombreCurso, String titulo, LocalDate fechaLimite) {
+        this.id = id;
+        this.mensaje = mensaje;
+        this.imagenUrl = imagenUrl;
+        this.fechaPublicacion = fechaPublicacion;
+        this.dadaDeBaja = dadaDeBaja;
+        this.usuarioId = usuarioId;
+        this.cursoId = cursoId;
+        this.autorNombre = autorNombre;
+        this.nombreCurso = nombreCurso;
+        this.titulo = titulo;
+        this.fechaLimite = fechaLimite;
     }
 
     public int getId() {
@@ -107,6 +123,22 @@ public class Publicacion {
 
     public void setNombreCurso(String nombreCurso) {
         this.nombreCurso = nombreCurso;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public LocalDate getFechaLimite() {
+        return fechaLimite;
+    }
+
+    public void setFechaLimite(LocalDate fechaLimite) {
+        this.fechaLimite = fechaLimite;
     }
 
     @Override

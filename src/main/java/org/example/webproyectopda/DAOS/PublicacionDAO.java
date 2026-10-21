@@ -21,14 +21,23 @@ public class PublicacionDAO {
         try {
             Connection conexion = ConexionDB.obtenerConexion();
 
-            String sql = "INSERT INTO publicacion (mensaje, imagen_url, fecha_publicacion, usuario_id, curso_id) VALUES (?,?,?,?,?)";
-
+            String sql = "INSERT INTO publicacion (mensaje, titulo, imagen_url, fecha_publicacion, fecha_limite, activa, usuario_id, curso_id) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement sentencia = conexion.prepareStatement(sql);
             sentencia.setString(1, publicacion.getMensaje());
-            sentencia.setString(2, publicacion.getImagenUrl());
-            sentencia.setObject(3, publicacion.getFechaPublicacion());
-            sentencia.setInt(4, publicacion.getUsuarioId());
-            sentencia.setInt(5, publicacion.getCursoId());
+            sentencia.setString(2, publicacion.getTitulo());
+            sentencia.setString(3, publicacion.getImagenUrl());
+            sentencia.setDate(4, java.sql.Date.valueOf(publicacion.getFechaPublicacion()));
+
+            if (publicacion.getFechaLimite() != null) {
+                sentencia.setDate(5, java.sql.Date.valueOf(publicacion.getFechaLimite()));
+            } else {
+                sentencia.setNull(5, java.sql.Types.DATE);
+            }
+
+            sentencia.setBoolean(6, !publicacion.isDadaDeBaja());
+            sentencia.setInt(7, publicacion.getUsuarioId());
+            sentencia.setInt(8, publicacion.getCursoId());
 
             int filasAfectadas = sentencia.executeUpdate();
 
@@ -234,7 +243,8 @@ public class PublicacionDAO {
     public static List<PublicacionFeed> listarUltimas(int usuarioId) {
         List<PublicacionFeed> retorno = new ArrayList<>();
 
-        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, " +
+        String sql = "SELECT p.id, p.mensaje, p.titulo, p.imagen_url, " +
+                "p.fecha_publicacion, p.fecha_limite, " +
                 "p.curso_id, c.nombre AS nombre_curso, u.nombre AS autor, " +
                 "CASE WHEN d.id IS NOT NULL THEN 'Duda' " +
                 "     WHEN m.id IS NOT NULL THEN 'Mensaje' " +
@@ -273,6 +283,8 @@ public class PublicacionDAO {
                     publicacion.setEstado(filas.getString("estado"));
                     publicacion.setCursoId(filas.getInt("curso_id"));
                     publicacion.setNombreCurso(filas.getString("nombre_curso"));
+                    publicacion.setTitulo(filas.getString("titulo"));
+                    publicacion.setFechaLimite(filas.getObject("fecha_limite", LocalDate.class));
 
                     retorno.add(publicacion);
                 }
@@ -661,19 +673,21 @@ public class PublicacionDAO {
 
     public static List<PublicacionFeed> listarFeedPorCurso(int cursoId) {
         List<PublicacionFeed> retorno = new ArrayList<>();
-        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, u.nombre AS autor, "
-                + "CASE WHEN d.id IS NOT NULL THEN 'Duda' "
-                + "     WHEN m.id IS NOT NULL THEN 'Mensaje' "
-                + "     WHEN ma.id IS NOT NULL THEN 'Material' "
-                + "     ELSE 'Publicación' END AS tipo, "
-                + "COALESCE(d.categoria, m.categoria) AS categoria, d.estado AS estado "
-                + "FROM publicacion p "
-                + "LEFT JOIN usuario u ON u.id = p.usuario_id "
-                + "LEFT JOIN duda d ON d.id = p.id "
-                + "LEFT JOIN mensaje m ON m.id = p.id "
-                + "LEFT JOIN material ma ON ma.id = p.id "
-                + "WHERE p.activa = TRUE AND p.curso_id = ? "
-                + "ORDER BY p.fecha_publicacion DESC, p.id DESC";
+        String sql = "SELECT p.id, p.mensaje, p.titulo, p.imagen_url, " +
+                "p.fecha_publicacion, p.fecha_limite, u.nombre AS autor, " +
+                "CASE WHEN d.id IS NOT NULL THEN 'Duda' " +
+                "     WHEN m.id IS NOT NULL THEN 'Mensaje' " +
+                "     WHEN ma.id IS NOT NULL THEN 'Material' " +
+                "     ELSE 'Publicación' END AS tipo, " +
+                "COALESCE(d.categoria, m.categoria) AS categoria, " +
+                "d.estado AS estado " +
+                "FROM publicacion p " +
+                "LEFT JOIN usuario u ON u.id = p.usuario_id " +
+                "LEFT JOIN duda d ON d.id = p.id " +
+                "LEFT JOIN mensaje m ON m.id = p.id " +
+                "LEFT JOIN material ma ON ma.id = p.id " +
+                "WHERE p.activa = TRUE AND p.curso_id = ? " +
+                "ORDER BY p.fecha_publicacion DESC, p.id DESC";
 
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
@@ -691,6 +705,8 @@ public class PublicacionDAO {
                     publicacion.setTipo(filas.getString("tipo"));
                     publicacion.setCategoria(filas.getString("categoria"));
                     publicacion.setEstado(filas.getString("estado"));
+                    publicacion.setTitulo(filas.getString("titulo"));
+                    publicacion.setFechaLimite(filas.getObject("fecha_limite", LocalDate.class));
                     retorno.add(publicacion);
                 }
             }

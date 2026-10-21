@@ -32,6 +32,7 @@
                             <div class="card shadow-sm">
                                 <div class="card-body">
 
+
                                     <div class="mb-2">
                                         <h5 class="mb-2">
                                             <c:out value="${publicacion.nombreCurso}" />
@@ -56,9 +57,20 @@
                                         </div>
                                     </div>
 
+                                    <h3 class="h5 mb-2">
+                                        <c:out value="${publicacion.titulo}" />
+                                    </h3>
+
                                     <p class="mb-3">
                                         <c:out value="${publicacion.mensaje}" />
                                     </p>
+
+                                    <c:if test="${not empty publicacion.fechaLimite}">
+                                        <p class="text-muted small mb-2">
+                                            <strong>Fecha límite:</strong>
+                                            <c:out value="${publicacion.fechaLimite}" />
+                                        </p>
+                                    </c:if>
 
                                     <p class="text-muted small mb-0">
                                         Por
