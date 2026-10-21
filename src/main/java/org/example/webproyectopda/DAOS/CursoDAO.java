@@ -196,5 +196,35 @@ public class CursoDAO {
             throw new RuntimeException(e);
         }
     }
+    public static List<Curso> listarDisponiblesParaInscripcion(int usuarioId, int anio) {
+        List<Curso> cursos = new ArrayList<>();
+
+        String sql = "SELECT c.* FROM curso c WHERE c.activo = TRUE AND c.anio = ? " +
+                "AND NOT EXISTS (SELECT 1 FROM inscripcion i WHERE i.usuario_id = ? AND i.curso_id = c.id) " +
+                "ORDER BY c.semestre, c.nombre";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, anio);
+            sentencia.setInt(2, usuarioId);
+
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    Curso curso = new Curso(resultado.getInt("id"),
+                            resultado.getString("nombre"),
+                            resultado.getInt("semestre"),
+                            resultado.getInt("anio"),
+                            resultado.getInt("creditos"),
+                            resultado.getString("descripcion"),
+                            resultado.getBoolean("activo"));
+                    cursos.add(curso);
+                }
+            }
+            return cursos;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

@@ -22,8 +22,8 @@ public class LogoutServlet extends HttpServlet {
 
         HttpSession sesion = request.getSession(false);
         if (sesion != null) {
-            sesion.invalidate(); // cierra la sesión
+            sesion.invalidate();
         }
-        response.sendRedirect(request.getContextPath() + "/login"); // vuelve a pedir credenciales
+        response.sendRedirect(request.getContextPath() + "/login");
     }
 }

@@ -27,25 +27,71 @@
                 </c:when>
 
                 <c:otherwise>
-                    <c:forEach var="publicacion" items="${publicaciones}">
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <p class="text-muted mb-2">
-                                        ${publicacion.fechaPublicacion}
-                                </p>
+                    <div class="d-flex flex-column gap-3">
+                        <c:forEach var="publicacion" items="${publicaciones}">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
 
-                                <p class="card-text">
-                                    <c:out value="${publicacion.mensaje}" />
-                                </p>
+                                    <div class="mb-2">
+                                        <h5 class="mb-2">
+                                            <c:out value="${publicacion.nombreCurso}" />
+                                        </h5>
 
-                                <c:if test="${not empty publicacion.imagenUrl}">
-                                    <img src="<c:out value='${publicacion.imagenUrl}'/>"
-                                            class="img-fluid rounded"
-                                            alt="Imagen de la publicación">
-                                </c:if>
+                                        <div class="d-flex flex-wrap gap-2">
+                                <span class="badge text-bg-dark">
+                                    <c:out value="${publicacion.tipo}" />
+                                </span>
+
+                                            <c:if test="${not empty publicacion.categoria}">
+                                    <span class="badge text-bg-info">
+                                        <c:out value="${publicacion.categoria eq 'Reunion' ? 'Reunión' : publicacion.categoria}" />
+                                    </span>
+                                            </c:if>
+
+                                            <c:if test="${publicacion.tipo eq 'Duda'}">
+                                    <span class="badge ${publicacion.estado eq 'Abierta' ? 'text-bg-warning' : 'text-bg-success'}">
+                                        <c:out value="${publicacion.estado}" />
+                                    </span>
+                                            </c:if>
+                                        </div>
+                                    </div>
+
+                                    <p class="mb-3">
+                                        <c:out value="${publicacion.mensaje}" />
+                                    </p>
+
+                                    <p class="text-muted small mb-0">
+                                        Por
+                                        <c:out value="${empty publicacion.autor ? 'Usuario eliminado' : publicacion.autor}" />
+                                        · Fecha:
+                                        <c:out value="${publicacion.fechaPublicacion}" />
+                                    </p>
+
+                                    <c:if test="${not empty publicacion.imagenUrl}">
+                                        <img src="<c:out value='${publicacion.imagenUrl}' />"
+                                             alt="Imagen de la publicación"
+                                             class="img-fluid rounded mt-3"
+                                             style="max-height: 350px;">
+                                    </c:if>
+
+                                    <div class="mt-3">
+                                        <a href="${pageContext.request.contextPath}/curso?id=${publicacion.cursoId}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Ver curso
+                                        </a>
+
+                                        <c:if test="${publicacion.tipo eq 'Duda'}">
+                                            <a href="${pageContext.request.contextPath}/duda?id=${publicacion.id}"
+                                               class="btn btn-sm btn-outline-secondary">
+                                                    ${publicacion.estado eq 'Abierta' ? 'Ver duda y responder' : 'Ver duda'}
+                                            </a>
+                                        </c:if>
+                                    </div>
+
+                                </div>
                             </div>
-                        </div>
-                    </c:forEach>
+                        </c:forEach>
+                    </div>
                 </c:otherwise>
             </c:choose>
         </div>

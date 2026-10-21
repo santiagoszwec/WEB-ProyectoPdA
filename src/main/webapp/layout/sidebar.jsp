@@ -16,6 +16,10 @@
                    href="${pageContext.request.contextPath}/notificaciones">
                     Notificaciones
                 </a>
+                <a class="nav-link"
+                   href="${pageContext.request.contextPath}/inscripciones">
+                    Inscribirme a curso
+                </a>
             </nav>
         </div>
     </div>

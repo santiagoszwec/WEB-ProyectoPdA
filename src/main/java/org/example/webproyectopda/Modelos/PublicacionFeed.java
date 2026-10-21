@@ -12,6 +12,8 @@ public class PublicacionFeed {
     private String tipo;
     private String categoria;
     private String estado;
+    private int CursoId;
+    private String NombreCurso;
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -36,4 +38,19 @@ public class PublicacionFeed {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public int getCursoId() {
+        return CursoId;
+    }
+    public void setCursoId(int cursoId) {
+        CursoId = cursoId;
+    }
+
+    public String getNombreCurso() {
+        return NombreCurso;
+    }
+
+    public void setNombreCurso(String nombreCurso) {
+        NombreCurso = nombreCurso;
+    }
 }

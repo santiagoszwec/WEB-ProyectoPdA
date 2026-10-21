@@ -238,6 +238,24 @@ public class InscripcionDAO {
         }
     }
 
+    public static boolean inscribirSiNoExiste(int usuarioId, int cursoId, int anio) {
+        String sql = "INSERT INTO inscripcion (estado, usuario_id, curso_id)SELECT ?, ?, c.id FROM curso c " +
+                "WHERE c.id = ? AND c.activo = TRUE AND c.anio = ? AND NOT EXISTS (" +
+                "SELECT 1 FROM inscripcion i WHERE i.usuario_id = ? AND i.curso_id = c.id)";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+            sentencia.setString(1, TipoEstado.Cursando.name());
+            sentencia.setInt(2, usuarioId);
+            sentencia.setInt(3, cursoId);
+            sentencia.setInt(4, anio);
+            sentencia.setInt(5, usuarioId);
+            return sentencia.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
 
