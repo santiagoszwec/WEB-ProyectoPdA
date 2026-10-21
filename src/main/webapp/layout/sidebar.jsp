@@ -1,3 +1,5 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
 <aside class="col-md-3 col-lg-2 mb-4">
     <div class="card shadow-sm">
         <div class="card-body">
