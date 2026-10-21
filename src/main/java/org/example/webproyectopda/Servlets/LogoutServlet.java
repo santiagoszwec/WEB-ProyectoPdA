@@ -13,11 +13,17 @@ public class LogoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.sendRedirect(request.getContextPath() + "/inicio");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
         HttpSession sesion = request.getSession(false);
         if (sesion != null) {
-            sesion.invalidate();
+            sesion.invalidate(); // cierra la sesión
         }
-        response.sendRedirect(request.getContextPath() + "/login");
+        response.sendRedirect(request.getContextPath() + "/login"); // vuelve a pedir credenciales
     }
 }
