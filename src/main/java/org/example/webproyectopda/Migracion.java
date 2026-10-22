@@ -138,20 +138,21 @@ public class Migracion {
                             "  FOREIGN KEY (comentario_id) REFERENCES comentario(id) ON DELETE CASCADE" +
                             ")"
             };
-            for (String sql : tablas) {
-                stmt.executeUpdate(sql);
-
-                String nombreTabla = sql.split("IF NOT EXISTS ")[1].split(" \\(")[0];
-
-                System.out.println("Tabla creada: " + nombreTabla);
-            }
-
             if (!existeColumna(conn, "publicacion", "titulo")) {
                 stmt.executeUpdate("ALTER TABLE publicacion ADD COLUMN titulo VARCHAR(150) NOT NULL DEFAULT '' AFTER mensaje");
             }
 
             if (!existeColumna(conn, "publicacion", "fecha_limite")) {
                 stmt.executeUpdate("ALTER TABLE publicacion ADD COLUMN fecha_limite DATE NULL AFTER fecha_publicacion");
+            }
+
+
+            for (String sql : tablas) {
+                stmt.executeUpdate(sql);
+
+                String nombreTabla = sql.split("IF NOT EXISTS ")[1].split(" \\(")[0];
+
+                System.out.println("Tabla creada: " + nombreTabla);
             }
 
             actualizarTablasExistentes(conn, stmt);
