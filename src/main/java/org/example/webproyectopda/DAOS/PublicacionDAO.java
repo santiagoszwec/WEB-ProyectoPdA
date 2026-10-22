@@ -21,14 +21,23 @@ public class PublicacionDAO {
         try {
             Connection conexion = ConexionDB.obtenerConexion();
 
-            String sql = "INSERT INTO publicacion (mensaje, imagen_url, fecha_publicacion, usuario_id, curso_id) VALUES (?,?,?,?,?)";
-
+            String sql = "INSERT INTO publicacion (mensaje, titulo, imagen_url, fecha_publicacion, fecha_limite, activa, usuario_id, curso_id) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement sentencia = conexion.prepareStatement(sql);
             sentencia.setString(1, publicacion.getMensaje());
-            sentencia.setString(2, publicacion.getImagenUrl());
-            sentencia.setObject(3, publicacion.getFechaPublicacion());
-            sentencia.setInt(4, publicacion.getUsuarioId());
-            sentencia.setInt(5, publicacion.getCursoId());
+            sentencia.setString(2, publicacion.getTitulo());
+            sentencia.setString(3, publicacion.getImagenUrl());
+            sentencia.setDate(4, java.sql.Date.valueOf(publicacion.getFechaPublicacion()));
+
+            if (publicacion.getFechaLimite() != null) {
+                sentencia.setDate(5, java.sql.Date.valueOf(publicacion.getFechaLimite()));
+            } else {
+                sentencia.setNull(5, java.sql.Types.DATE);
+            }
+
+            sentencia.setBoolean(6, !publicacion.isDadaDeBaja());
+            sentencia.setInt(7, publicacion.getUsuarioId());
+            sentencia.setInt(8, publicacion.getCursoId());
 
             int filasAfectadas = sentencia.executeUpdate();
 
@@ -253,7 +262,8 @@ public class PublicacionDAO {
     public static List<PublicacionFeed> listarUltimas(int usuarioId) {
         List<PublicacionFeed> retorno = new ArrayList<>();
 
-        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, " +
+        String sql = "SELECT p.id, p.mensaje, p.titulo, p.imagen_url, " +
+                "p.fecha_publicacion, p.fecha_limite, " +
                 "p.curso_id, c.nombre AS nombre_curso, u.nombre AS autor, " +
                 "CASE WHEN d.id IS NOT NULL THEN 'Duda' " +
                 "     WHEN m.id IS NOT NULL THEN 'Mensaje' " +
@@ -292,6 +302,8 @@ public class PublicacionDAO {
                     publicacion.setEstado(filas.getString("estado"));
                     publicacion.setCursoId(filas.getInt("curso_id"));
                     publicacion.setNombreCurso(filas.getString("nombre_curso"));
+                    publicacion.setTitulo(filas.getString("titulo"));
+                    publicacion.setFechaLimite(filas.getObject("fecha_limite", LocalDate.class));
 
                     retorno.add(publicacion);
                 }
@@ -647,8 +659,9 @@ public class PublicacionDAO {
     public static List<PublicacionFeed> listarTodas() {
         List<PublicacionFeed> retorno = new ArrayList<>();
 
-        String sql = "SELECT p.id, p.usuario_id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, " +
-                "c.nombre AS curso, u.nombre AS autor, " +
+        String sql = "SELECT p.id, p.usuario_id, p.mensaje, p.titulo, p.imagen_url, "
+                + "p.fecha_publicacion, p.fecha_limite, p.activa, "
+                + "c.nombre AS curso, u.nombre AS autor, " +
                 "CASE WHEN d.id IS NOT NULL THEN 'Duda' " +
                 "     WHEN m.id IS NOT NULL THEN 'Mensaje' " +
                 "     WHEN ma.id IS NOT NULL THEN 'Material' " +
@@ -681,7 +694,7 @@ public class PublicacionDAO {
     public static List<PublicacionFeed> buscarDudas(int usuarioId, String texto, String categoria) {
 
         StringBuilder sql = new StringBuilder(
-                "SELECT p.id, p.usuario_id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, " +
+                "SELECT p.id, p.usuario_id, p.mensaje, p.titulo, p.imagen_url, p.fecha_publicacion, p.fecha_limite, p.activa, " +
                         "c.nombre AS curso, u.nombre AS autor, 'Duda' AS tipo, " +
                         "d.categoria AS categoria, d.estado AS estado " +
                         "FROM publicacion p " +
@@ -726,7 +739,8 @@ public class PublicacionDAO {
 
     public static List<PublicacionFeed> listarFeedPorCurso(int cursoId) {
         List<PublicacionFeed> retorno = new ArrayList<>();
-        String sql = "SELECT p.id, p.usuario_id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, c.nombre AS curso, u.nombre AS autor, "
+        String sql = "SELECT p.id, p.usuario_id, p.mensaje, p.titulo, p.imagen_url, "
+                + "p.fecha_publicacion, p.fecha_limite, p.activa, c.nombre AS curso, u.nombre AS autor, "
                 + "CASE WHEN d.id IS NOT NULL THEN 'Duda' "
                 + "     WHEN m.id IS NOT NULL THEN 'Mensaje' "
                 + "     WHEN ma.id IS NOT NULL THEN 'Material' "
@@ -762,8 +776,10 @@ public class PublicacionDAO {
         publicacion.setId(filas.getInt("id"));
         publicacion.setUsuarioId(filas.getInt("usuario_id"));
         publicacion.setMensaje(filas.getString("mensaje"));
+        publicacion.setTitulo(filas.getString("titulo"));
         publicacion.setImagenUrl(filas.getString("imagen_url"));
         publicacion.setFechaPublicacion(filas.getObject("fecha_publicacion", LocalDate.class));
+        publicacion.setFechaLimite(filas.getObject("fecha_limite", LocalDate.class));
         publicacion.setAutor(filas.getString("autor"));
         publicacion.setTipo(filas.getString("tipo"));
         publicacion.setCategoria(filas.getString("categoria"));

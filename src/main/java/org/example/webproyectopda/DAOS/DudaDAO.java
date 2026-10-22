@@ -19,21 +19,38 @@ public class DudaDAO {
     // Duda hereda de Publicacion por tabla dividida: primero se inserta en
     // "publicacion" (para obtener el id autogenerado) y luego en "duda" con ese mismo id.
     public static boolean crear(Duda duda) {
-        String sqlPublicacion = "INSERT INTO publicacion (mensaje, imagen_url, fecha_publicacion, usuario_id, curso_id) VALUES (?,?,?,?,?)";
-        String sqlDuda = "INSERT INTO duda (id, estado, categoria) VALUES (?,?,?)";
+        String sqlPublicacion = "INSERT INTO publicacion (mensaje, titulo, imagen_url, fecha_publicacion, fecha_limite, usuario_id, curso_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        String sqlDuda = "INSERT INTO duda (id, estado, categoria) VALUES (?, ?, ?)";
 
         try {
             Connection conexion = ConexionDB.obtenerConexion();
 
             PreparedStatement sentenciaPublicacion = conexion.prepareStatement(sqlPublicacion, Statement.RETURN_GENERATED_KEYS);
+
             sentenciaPublicacion.setString(1, duda.getMensaje());
-            sentenciaPublicacion.setString(2, duda.getImagenUrl());
-            sentenciaPublicacion.setObject(3, duda.getFechaPublicacion());
-            sentenciaPublicacion.setInt(4, duda.getUsuarioId());
-            sentenciaPublicacion.setInt(5, duda.getCursoId());
-            sentenciaPublicacion.executeUpdate();
+            sentenciaPublicacion.setString(2, duda.getTitulo());
+            sentenciaPublicacion.setString(3, duda.getImagenUrl());
+            sentenciaPublicacion.setObject(4, duda.getFechaPublicacion());
+
+            if (duda.getFechaLimite() != null) {
+                sentenciaPublicacion.setObject(5, duda.getFechaLimite());
+            } else {
+                sentenciaPublicacion.setNull(5, java.sql.Types.DATE);
+            }
+
+            sentenciaPublicacion.setInt(6, duda.getUsuarioId());
+            sentenciaPublicacion.setInt(7, duda.getCursoId());
+
+            int filasInsertadas = sentenciaPublicacion.executeUpdate();
+
+            if (filasInsertadas != 1) {
+                return false;
+            }
 
             ResultSet generadas = sentenciaPublicacion.getGeneratedKeys();
+
             if (!generadas.next()) {
                 return false;
             }
@@ -43,8 +60,8 @@ public class DudaDAO {
 
             PreparedStatement sentenciaDuda = conexion.prepareStatement(sqlDuda);
             sentenciaDuda.setInt(1, id);
-            sentenciaDuda.setObject(2, duda.getEstado().name());
-            sentenciaDuda.setObject(3, duda.getCategoria().name());
+            sentenciaDuda.setString(2, duda.getEstado().name());
+            sentenciaDuda.setString(3, duda.getCategoria().name());
 
             return sentenciaDuda.executeUpdate() == 1;
 
@@ -77,12 +94,14 @@ public class DudaDAO {
     }
 
     public static Duda buscarPorId(int id) throws SQLException {
-        String sql = "SELECT p.id, p.mensaje, p.imagen_url, p.fecha_publicacion, p.activa, p.usuario_id, p.curso_id, "
-                + "d.estado, d.categoria, u.nombre AS autor_nombre "
-                + "FROM publicacion p "
-                + "JOIN duda d ON d.id = p.id "
-                + "LEFT JOIN usuario u ON u.id = p.usuario_id "
-                + "WHERE p.id = ?";
+        String sql = "SELECT p.id, p.mensaje, p.titulo, p.imagen_url, " +
+                "p.fecha_publicacion, p.fecha_limite, p.activa, " +
+                "p.usuario_id, p.curso_id, d.estado, d.categoria, " +
+                "u.nombre AS autor_nombre " +
+                "FROM publicacion p " +
+                "JOIN duda d ON d.id = p.id " +
+                "LEFT JOIN usuario u ON u.id = p.usuario_id " +
+                "WHERE p.id = ?";
 
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
@@ -103,6 +122,8 @@ public class DudaDAO {
     private static Duda mapearDuda(ResultSet filas) throws SQLException {
         int id = filas.getInt("id");
         String mensaje = filas.getString("mensaje");
+        String titulo = filas.getString("titulo");
+        LocalDate fechaLimite = filas.getObject("fecha_limite", LocalDate.class);
         String imagenUrl = filas.getString("imagen_url");
         LocalDate fechaPublicacion = filas.getObject("fecha_publicacion", LocalDate.class);
         boolean activa = filas.getBoolean("activa");
@@ -111,7 +132,12 @@ public class DudaDAO {
         EstadoDuda estado = EstadoDuda.valueOf(filas.getString("estado"));
         TipoCategoria categoria = TipoCategoria.valueOf(filas.getString("categoria"));
 
-        return new Duda(id, mensaje, imagenUrl, fechaPublicacion, !activa, usuarioId, cursoId, estado, categoria);
+        Duda duda = new Duda(id, mensaje, imagenUrl, fechaPublicacion, !activa, usuarioId, cursoId, estado, categoria);
+
+        duda.setTitulo(titulo);
+        duda.setFechaLimite(fechaLimite);
+
+        return duda;
     }
 
     public static boolean marcarComoResuelta(int dudaId) {

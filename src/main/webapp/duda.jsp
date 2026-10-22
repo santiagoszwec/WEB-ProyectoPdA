@@ -43,7 +43,15 @@
                                 <c:out value="${duda.estado}" />
                             </span>
                         </div>
-
+                        <h1 class="h3 mb-3">
+                            <c:out value="${duda.titulo}" />
+                        </h1>
+                        <c:if test="${not empty duda.fechaLimite}">
+                            <p class="text-muted small">
+                                <strong>Fecha límite:</strong>
+                                <c:out value="${duda.fechaLimite}" />
+                            </p>
+                        </c:if>
                         <p class="mb-2"><c:out value="${duda.mensaje}" /></p>
 
                         <c:if test="${not empty duda.imagenUrl}">
@@ -62,6 +70,7 @@
                 <c:forEach var="respuesta" items="${respuestas}">
                     <div class="card mb-3 ${respuesta.destacado ? 'border-success' : ''}">
                         <div class="card-body">
+
                             <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                                 <strong><c:out value="${respuesta.autorNombre}" /></strong>
                                 <span class="text-muted small"><c:out value="${respuesta.fechaPublicacion}" /></span>

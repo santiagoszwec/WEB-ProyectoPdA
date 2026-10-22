@@ -15,7 +15,9 @@ public class MaterialDAO {
     // La creación toca dos tablas (publicacion + material): se hacen ambas en la misma
     // transacción y se cierra la conexión, para no dejar publicaciones huérfanas.
     public static boolean crear(Material material) {
-        String sqlPublicacion = "INSERT INTO publicacion (mensaje, imagen_url, fecha_publicacion, usuario_id, curso_id) VALUES (?,?,?,?,?)";
+        String sqlPublicacion = "INSERT INTO publicacion " +
+                "(mensaje, titulo, imagen_url, fecha_publicacion, fecha_limite, usuario_id, curso_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         String sqlMaterial = "INSERT INTO material (id, archivo_url, tipo_material, tipo_archivo, tema) VALUES (?,?,?,?,?)";
 
         Connection conexion = null;
@@ -28,10 +30,18 @@ public class MaterialDAO {
                          conexion.prepareStatement(sqlPublicacion, Statement.RETURN_GENERATED_KEYS)) {
 
                 sentenciaPublicacion.setString(1, material.getMensaje());
-                sentenciaPublicacion.setString(2, material.getImagenUrl());
-                sentenciaPublicacion.setObject(3, material.getFechaPublicacion());
-                sentenciaPublicacion.setInt(4, material.getUsuarioId());
-                sentenciaPublicacion.setInt(5, material.getCursoId());
+                sentenciaPublicacion.setString(2, material.getTitulo());
+                sentenciaPublicacion.setString(3, material.getImagenUrl());
+                sentenciaPublicacion.setObject(4, material.getFechaPublicacion());
+
+                if (material.getFechaLimite() != null) {
+                    sentenciaPublicacion.setObject(5, material.getFechaLimite());
+                } else {
+                    sentenciaPublicacion.setNull(5, Types.DATE);
+                }
+
+                sentenciaPublicacion.setInt(6, material.getUsuarioId());
+                sentenciaPublicacion.setInt(7, material.getCursoId());
 
                 if (sentenciaPublicacion.executeUpdate() != 1) {
                     conexion.rollback();

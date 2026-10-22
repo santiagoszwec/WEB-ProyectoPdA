@@ -59,11 +59,35 @@
                                         <form action="${pageContext.request.contextPath}/curso?id=${curso.id}"
                                               method="post" novalidate>
 
+                                            <div class="mb-3">
+                                                <label for="titulo" class="form-label">Título</label>
+                                                <input type="text"
+                                                       id="titulo"
+                                                       name="titulo"
+                                                       class="form-control"
+                                                       maxlength="150"
+                                                       required
+                                                       value="<c:out value='${valorTitulo}' />">
+                                            </div>
 
                                             <div class="mb-3">
                                                 <label for="mensaje" class="form-label">Mensaje</label>
                                                 <textarea id="mensaje" name="mensaje" class="form-control"
                                                           rows="3" maxlength="2000"><c:out value="${valorMensaje}" /></textarea>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="fechaLimite" class="form-label">
+                                                    Fecha límite <span class="text-muted">(opcional)</span>
+                                                </label>
+
+                                                <input type="date"
+                                                       id="fechaLimite"
+                                                       name="fechaLimite"
+                                                       class="form-control"
+                                                       value="<c:out value='${valorFechaLimite}' />"
+                                                       min="<%= java.time.LocalDate.now() %>">
+
                                             </div>
 
 
@@ -318,9 +342,20 @@
                                         </c:if>
                                     </div>
 
+                                    <h3 class="h5 mb-2">
+                                        <c:out value="${publicacion.titulo}" />
+                                    </h3>
+
                                     <p class="mb-3">
                                         <c:out value="${publicacion.mensaje}" />
                                     </p>
+
+                                    <c:if test="${not empty publicacion.fechaLimite}">
+                                        <p class="text-muted small mb-2">
+                                            <strong>Fecha límite:</strong>
+                                            <c:out value="${publicacion.fechaLimite}" />
+                                        </p>
+                                    </c:if>
 
                                      <p class="text-muted small mb-0">
                                         Por <c:out value="${empty publicacion.autor ? 'Usuario eliminado' : publicacion.autor}" />

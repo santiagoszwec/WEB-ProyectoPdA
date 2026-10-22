@@ -16,21 +16,37 @@ import java.util.List;
 public class MensajeDAO {
 
     public static boolean crear(Mensaje mensaje) {
-        String sqlPublicacion = "INSERT INTO publicacion (mensaje, imagen_url, fecha_publicacion, usuario_id, curso_id) VALUES (?,?,?,?,?)";
-        String sqlMensaje = "INSERT INTO mensaje (id, categoria) VALUES (?,?)";
+        String sqlPublicacion = "INSERT INTO publicacion " +
+                "(mensaje, titulo, imagen_url, fecha_publicacion, fecha_limite, usuario_id, curso_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        String sqlMensaje = "INSERT INTO mensaje (id, categoria) VALUES (?, ?)";
 
         try {
             Connection conexion = ConexionDB.obtenerConexion();
 
             PreparedStatement sentenciaPublicacion = conexion.prepareStatement(sqlPublicacion, Statement.RETURN_GENERATED_KEYS);
+
             sentenciaPublicacion.setString(1, mensaje.getMensaje());
-            sentenciaPublicacion.setString(2, mensaje.getImagenUrl());
-            sentenciaPublicacion.setObject(3, mensaje.getFechaPublicacion());
-            sentenciaPublicacion.setInt(4, mensaje.getUsuarioId());
-            sentenciaPublicacion.setInt(5, mensaje.getCursoId());
-            sentenciaPublicacion.executeUpdate();
+            sentenciaPublicacion.setString(2, mensaje.getTitulo());
+            sentenciaPublicacion.setString(3, mensaje.getImagenUrl());
+            sentenciaPublicacion.setObject(4, mensaje.getFechaPublicacion());
+
+            if (mensaje.getFechaLimite() != null) {
+                sentenciaPublicacion.setObject(5, mensaje.getFechaLimite());
+            } else {
+                sentenciaPublicacion.setNull(5, java.sql.Types.DATE);
+            }
+
+            sentenciaPublicacion.setInt(6, mensaje.getUsuarioId());
+            sentenciaPublicacion.setInt(7, mensaje.getCursoId());
+
+            if (sentenciaPublicacion.executeUpdate() != 1) {
+                return false;
+            }
 
             ResultSet generadas = sentenciaPublicacion.getGeneratedKeys();
+
             if (!generadas.next()) {
                 return false;
             }

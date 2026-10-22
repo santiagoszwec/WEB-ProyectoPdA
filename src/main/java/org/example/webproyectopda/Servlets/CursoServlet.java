@@ -105,6 +105,10 @@ public class CursoServlet extends HttpServlet {
             String imagenUrl = request.getParameter("imagenUrl");
             String tipo = request.getParameter("tipo");
             String categoriaTexto = request.getParameter("categoria");
+            String titulo = request.getParameter("titulo");
+            String fechaLimiteTexto = request.getParameter("fechaLimite");
+
+            LocalDate fechaLimite = null;
 
             String archivoUrl = request.getParameter("archivoUrl");
             String tipoMaterialTexto = request.getParameter("tipoMaterial");
@@ -113,6 +117,23 @@ public class CursoServlet extends HttpServlet {
 
             List<String> errores = validar(usuario, mensaje, adjuntar, imagenUrl, tipo,
                     categoriaTexto, archivoUrl, tipoMaterialTexto, tipoArchivoTexto, tema);
+
+            if (titulo == null || titulo.isBlank()) {
+                errores.add("El título no puede estar vacío.");
+            } else if (titulo.trim().length() > 150) {
+                errores.add("El título no puede superar los 150 caracteres.");
+            }
+
+            if (fechaLimiteTexto != null && !fechaLimiteTexto.isBlank()) {
+                try {
+                    fechaLimite = LocalDate.parse(fechaLimiteTexto);
+                    if (fechaLimite.isBefore(LocalDate.now())) {
+                        errores.add("La fecha límite no puede ser anterior a hoy.");
+                    }
+                } catch (java.time.format.DateTimeParseException e) {
+                    errores.add("La fecha límite no es válida.");
+                }
+            }
 
             if (!errores.isEmpty()) {
 
@@ -126,6 +147,8 @@ public class CursoServlet extends HttpServlet {
                 request.setAttribute("valorTipoMaterial", tipoMaterialTexto);
                 request.setAttribute("valorTipoArchivo", tipoArchivoTexto);
                 request.setAttribute("valorTema", tema);
+                request.setAttribute("valorTitulo", titulo);
+                request.setAttribute("valorFechaLimite", fechaLimiteTexto);
                 mostrarCurso(request, response, curso, usuario);
                 return;
             }
@@ -142,6 +165,8 @@ public class CursoServlet extends HttpServlet {
                 Duda duda = new Duda(EstadoDuda.Abierta,
                         TipoCategoria.valueOf(categoriaTexto), usuario.getId(), curso.getId());
                 completarPublicacion(duda, mensaje, urlFinal);
+                duda.setTitulo(titulo.trim());
+                duda.setFechaLimite(fechaLimite);
                 guardada = DudaDAO.crear(duda);
                 publicacion = duda;
                 tipoNotificacion = TipoNotificacion.Duda;
@@ -154,6 +179,8 @@ public class CursoServlet extends HttpServlet {
                         TipoArchivo.valueOf(tipoArchivoTexto),
                         tema.trim(), usuario.getId(), curso.getId());
                 completarPublicacion(material, mensaje, urlFinal);
+                material.setTitulo(titulo.trim());
+                material.setFechaLimite(fechaLimite);
                 guardada = MaterialDAO.crear(material);
                 publicacion = material;
                 tipoNotificacion = TipoNotificacion.Material;
@@ -163,6 +190,8 @@ public class CursoServlet extends HttpServlet {
 
                 Mensaje m = new Mensaje(TipoCategoria.valueOf(categoriaTexto), usuario.getId(), curso.getId());
                 completarPublicacion(m, mensaje, urlFinal);
+                m.setTitulo(titulo.trim());
+                m.setFechaLimite(fechaLimite);
                 guardada = MensajeDAO.crear(m);
                 publicacion = m;
                 tipoNotificacion = TipoNotificacion.Mensaje;
