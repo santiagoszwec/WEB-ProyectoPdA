@@ -127,6 +127,42 @@ public class CursoServlet extends HttpServlet {
             if (fechaLimiteTexto != null && !fechaLimiteTexto.isBlank()) {
                 try {
                     fechaLimite = LocalDate.parse(fechaLimiteTexto);
+
+                    if (fechaLimite.isBefore(LocalDate.now())) {
+                        errores.add("La fecha límite no puede ser anterior a hoy.");
+                    }
+                } catch (java.time.format.DateTimeParseException e) {
+                    errores.add("La fecha límite no es válida.");
+                }
+            }
+
+            if (!errores.isEmpty()) {
+                request.setAttribute("errores", errores);
+                request.setAttribute("valorMensaje", mensaje);
+                request.setAttribute("valorAdjuntar", adjuntar);
+                request.setAttribute("valorImagenUrl", imagenUrl);
+                request.setAttribute("valorTipo", tipo);
+                request.setAttribute("valorCategoria", categoriaTexto);
+                request.setAttribute("valorArchivoUrl", archivoUrl);
+                request.setAttribute("valorTipoMaterial", tipoMaterialTexto);
+                request.setAttribute("valorTipoArchivo", tipoArchivoTexto);
+                request.setAttribute("valorTema", tema);
+                request.setAttribute("valorTitulo", titulo);
+                request.setAttribute("valorFechaLimite", fechaLimiteTexto);
+
+                mostrarCurso(request, response, curso, usuario);
+                return;
+            }
+
+            if (titulo == null || titulo.isBlank()) {
+                errores.add("El título no puede estar vacío");
+            } else if (titulo.trim().length() > 150) {
+                errores.add("El título no puede superar los 150 caracteres");
+            }
+
+            if (fechaLimiteTexto != null && !fechaLimiteTexto.isBlank()) {
+                try {
+                    fechaLimite = LocalDate.parse(fechaLimiteTexto);
                     if (fechaLimite.isBefore(LocalDate.now())) {
                         errores.add("La fecha límite no puede ser anterior a hoy.");
                     }
