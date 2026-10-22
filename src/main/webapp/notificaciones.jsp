@@ -118,9 +118,23 @@
                                             <c:out value="${notificacion.tipo}" />
                                         </span>
                                 </td>
-                                <td>
-                                    <c:out value="${notificacion.mensaje}" />
-                                </td>
+                                                               <td>
+                                                                   <c:choose>
+                                                                       <c:when test="${notificacion.publicacionActiva and notificacion.esDuda}">
+                                                                           <a href="${pageContext.request.contextPath}/duda?id=${notificacion.publicacionId}">
+                                                                               <c:out value="${notificacion.mensaje}" />
+                                                                           </a>
+                                                                       </c:when>
+                                                                       <c:when test="${notificacion.publicacionActiva and not empty notificacion.cursoId}">
+                                                                           <a href="${pageContext.request.contextPath}/curso?id=${notificacion.cursoId}#publicacion-${notificacion.publicacionId}">
+                                                                               <c:out value="${notificacion.mensaje}" />
+                                                                           </a>
+                                                                       </c:when>
+                                                                       <c:otherwise>
+                                                                           <c:out value="${notificacion.mensaje}" />
+                                                                       </c:otherwise>
+                                                                   </c:choose>
+                                                               </td>
                                      <td class="text-end">
                                         <form method="post"
                                              action="${pageContext.request.contextPath}/notificaciones"

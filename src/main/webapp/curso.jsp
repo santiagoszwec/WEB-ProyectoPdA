@@ -322,8 +322,8 @@
 
                 <c:otherwise>
                     <div class="d-flex flex-column gap-3">
-                        <c:forEach var="publicacion" items="${publicaciones}">
-                            <div class="card shadow-sm">
+                                               <c:forEach var="publicacion" items="${publicaciones}">
+                                                   <div class="card shadow-sm" id="publicacion-${publicacion.id}">
                                 <div class="card-body">
 
                                     <div class="d-flex flex-wrap gap-2 mb-2">
