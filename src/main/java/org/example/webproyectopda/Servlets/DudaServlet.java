@@ -53,7 +53,6 @@ public class DudaServlet extends HttpServlet {
             mostrarError(request, response, "La duda indicada no es válida.");
             return;
         }
-
         try {
             Duda duda = DudaDAO.buscarPorId(dudaId);
             if (duda == null || duda.isDadaDeBaja()) {
@@ -93,6 +92,12 @@ public class DudaServlet extends HttpServlet {
             mostrarError(request, response, "La duda indicada no es válida.");
             return;
         }
+
+        if ("marcarUtil".equals(request.getParameter("accion"))) {
+            marcarComoMasUtil(request, response, sesion, usuario, dudaId);
+            return;
+        }
+
         String texto = texto(request.getParameter("texto"));
         String imagenUrl = texto(request.getParameter("imagenUrl")).strip();
         String publicId = texto(request.getParameter("imagenPublicId")).strip();
@@ -169,7 +174,57 @@ public class DudaServlet extends HttpServlet {
             }
         }
     }
+    private void marcarComoMasUtil(HttpServletRequest request, HttpServletResponse response,
+                                   HttpSession sesion, Usuario usuario, int dudaId)
+            throws ServletException, IOException {
 
+        String error = null;
+        try {
+            Duda duda = DudaDAO.buscarPorId(dudaId);
+            if (duda == null || duda.isDadaDeBaja()) {
+                mostrarError(request, response, "La duda no existe o fue dada de baja.");
+                return;
+            }
+
+            boolean esAutor = duda.getUsuarioId() == usuario.getId();
+            boolean esAdmin = usuario.getRol() == TipoRol.Admin;
+
+            if (!esAutor && !esAdmin) {
+                error = "Solo el autor de la duda o un administrador puede elegir la respuesta más útil.";
+            } else if (duda.getEstado() != EstadoDuda.Abierta) {
+                error = "La duda ya está resuelta.";
+            } else {
+                List<Comentario> respuestas = armarRespuestas(ComentarioDAO.listarDeDuda(dudaId));
+                Comentario respuesta = buscarRespuesta(respuestas, texto(request.getParameter("respuesta")));
+
+                if (respuesta == null) {
+                    error = "La respuesta elegida no existe o no pertenece a esta duda.";
+                } else {
+                    Notificacion notificacion = null;
+                    if (respuesta.getUsuarioId() != usuario.getId()) {
+                        notificacion = new Notificacion(LocalDate.now(), TipoNotificacion.Respuesta,
+                                usuario.getNombre() + " marcó tu respuesta como la más útil: \""
+                                        + resumir(respuesta.getMensaje()) + "\"",
+                                respuesta.getUsuarioId(), dudaId);
+                    }
+
+                    if (!DudaDAO.marcarResueltaYDestacarRespuesta(dudaId, respuesta.getId(), notificacion)) {
+                        error = "No se pudo marcar: la duda ya fue resuelta o la respuesta no es válida.";
+                    }
+                }
+            }
+        } catch (SQLException | RuntimeException e) {
+            log("Error al marcar como resuelta la duda " + dudaId, e);
+            error = "No se pudo marcar la duda como resuelta. Intentá nuevamente.";
+        }
+
+        if (error != null) {
+            sesion.setAttribute("dudaError", error);
+        } else {
+            sesion.setAttribute("dudaMensaje", "La duda quedó marcada como resuelta.");
+        }
+        response.sendRedirect(request.getContextPath() + "/duda?id=" + dudaId);
+    }
     private void mostrarDuda(HttpServletRequest request, HttpServletResponse response, Duda duda, Usuario usuario)
             throws SQLException, ServletException, IOException {
 
@@ -189,6 +244,8 @@ public class DudaServlet extends HttpServlet {
         request.setAttribute("respuestas", respuestas);
         request.setAttribute("esAutorDeLaDuda", duda.getUsuarioId() == usuario.getId());
         request.setAttribute("puedeResponder", duda.getEstado() == EstadoDuda.Abierta);
+        boolean esAutorOAdmin = duda.getUsuarioId() == usuario.getId() || usuario.getRol() == TipoRol.Admin;
+        request.setAttribute("puedeMarcarUtil", esAutorOAdmin && duda.getEstado() == EstadoDuda.Abierta);
         prepararFormulario(request);
         request.getRequestDispatcher("/duda.jsp").forward(request, response);
     }
