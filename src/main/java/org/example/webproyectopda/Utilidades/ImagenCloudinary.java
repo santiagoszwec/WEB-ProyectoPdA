@@ -19,7 +19,7 @@ public class ImagenCloudinary {
             URI uri = new URI(url);
             String ruta = "/" + ConfiguracionCloudinary.getCloudName() + "/image/upload/";
             String patron = Pattern.quote(ruta) + "(?:v[0-9]+/)?"
-                    + Pattern.quote(publicId) + "[.](?:jpg|jpeg|png)";
+                    + Pattern.quote(publicId) + "[.](?:jpg|jpeg|png|pdf)";
             if (!"https".equalsIgnoreCase(uri.getScheme())
                     || !"res.cloudinary.com".equalsIgnoreCase(uri.getHost())
                     || (uri.getPort() != -1 && uri.getPort() != 443)
