@@ -127,6 +127,7 @@ public class UsuarioDAO {
 
     public static boolean actualizar(Usuario usuario) {
         String sql = "UPDATE usuario SET nombre = ?, correo = ?, anio_de_generacion = ?, rol = ?, contrasenia = ? WHERE id = ?";
+
         try {
             Connection conexion = ConexionDB.obtenerConexion();
             PreparedStatement sentencia = conexion.prepareStatement(sql);
@@ -141,6 +142,25 @@ public class UsuarioDAO {
             int filasAfectadas = sentencia.executeUpdate();
 
             return filasAfectadas == 1;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Edición del propio perfil: no permite cambiar rol ni estado de la cuenta.
+    public static boolean actualizarPerfil(Usuario usuario) {
+        String sql = "UPDATE usuario SET nombre = ?, correo = ?, anio_de_generacion = ?, contrasenia = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setString(1, usuario.getNombre());
+            sentencia.setString(2, usuario.getCorreo());
+            sentencia.setInt(3, usuario.getAnioDeGeneracion());
+            sentencia.setString(4, usuario.getContrasenia());
+            sentencia.setInt(5, usuario.getId());
+
+            return sentencia.executeUpdate() == 1;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -11,6 +11,10 @@
                     Inicio
                 </a>
                 <a class="nav-link"
+                   href="${pageContext.request.contextPath}/perfil?id=${sessionScope.usuarioLogueado.id}">
+                    Mi perfil
+                </a>
+                <a class="nav-link"
                    href="${pageContext.request.contextPath}/misCursos">
                     Mis cursos
                 </a>

@@ -22,6 +22,127 @@
                 <c:if test="${esPropio}">· (este sos vos)</c:if>
             </p>
 
+            <c:if test="${not empty mensajeExito}">
+                <div class="alert alert-success" role="alert">
+                    <c:out value="${mensajeExito}" />
+                </div>
+            </c:if>
+
+            <c:if test="${esPropio}">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                            <h2 class="h5 mb-0">Mis datos</h2>
+                            <button type="button"
+                                    class="btn btn-outline-primary"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#formPerfil"
+                                    aria-expanded="${abrirFormulario ? 'true' : 'false'}"
+                                    aria-controls="formPerfil">
+                                Editar perfil
+                            </button>
+                        </div>
+
+                        <dl class="row mb-0">
+                            <dt class="col-sm-3">Correo</dt>
+                            <dd class="col-sm-9"><c:out value="${estudiante.correo}" /></dd>
+
+                            <dt class="col-sm-3">Año de generación</dt>
+                            <dd class="col-sm-9 mb-0"><c:out value="${estudiante.anioDeGeneracion}" /></dd>
+                        </dl>
+
+                        <div class="collapse ${abrirFormulario ? 'show' : ''}" id="formPerfil">
+                            <hr>
+
+                            <c:if test="${not empty errores}">
+                                <div class="alert alert-danger" role="alert">
+                                    <ul class="mb-0">
+                                        <c:forEach var="error" items="${errores}">
+                                            <li><c:out value="${error}" /></li>
+                                        </c:forEach>
+                                    </ul>
+                                </div>
+                            </c:if>
+
+                            <form action="${pageContext.request.contextPath}/perfil" method="post">
+
+                                <div class="mb-3">
+                                    <label for="nombre" class="form-label">Nombre</label>
+                                    <input type="text"
+                                           id="nombre"
+                                           name="nombre"
+                                           class="form-control"
+                                           maxlength="100"
+                                           required
+                                           value="<c:out value='${empty valorNombre ? estudiante.nombre : valorNombre}' />">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="correo" class="form-label">Correo</label>
+                                    <input type="email"
+                                           id="correo"
+                                           name="correo"
+                                           class="form-control"
+                                           maxlength="100"
+                                           required
+                                           value="<c:out value='${empty valorCorreo ? estudiante.correo : valorCorreo}' />">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="anioDeGeneracion" class="form-label">Año de generación</label>
+                                    <input type="number"
+                                           id="anioDeGeneracion"
+                                           name="anioDeGeneracion"
+                                           class="form-control"
+                                           min="2008"
+                                           max="2027"
+                                           required
+                                           value="<c:out value='${empty valorAnio ? estudiante.anioDeGeneracion : valorAnio}' />">
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="password" class="form-label">
+                                            Contraseña nueva <span class="text-muted">(opcional)</span>
+                                        </label>
+                                        <input type="password"
+                                               id="password"
+                                               name="password"
+                                               class="form-control"
+                                               minlength="6"
+                                               maxlength="255"
+                                               autocomplete="new-password"
+                                               placeholder="Dejala vacía para no cambiarla">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="password2" class="form-label">Repetir contraseña</label>
+                                        <input type="password"
+                                               id="password2"
+                                               name="password2"
+                                               class="form-control"
+                                               minlength="6"
+                                               autocomplete="new-password">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+
+                                    <button type="button"
+                                            class="btn btn-outline-secondary"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#formPerfil">
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </c:if>
+
             <div class="row g-4 mb-4">
                 <div class="col-lg-6">
                     <div class="card shadow-sm h-100">
