@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:include page="/layout/header.jsp" />
 
 <style>
@@ -73,15 +73,19 @@
 
                             <p class="mb-2"><c:out value="${respuesta.mensaje}" /></p>
 
-                            <c:choose>
-                                <c:when test="${not empty respuesta.imagenUrl}">
-                                    <img src="<c:out value='${respuesta.imagenUrl}' />" alt="Imagen adjunta"
-                                         class="img-fluid rounded" style="max-height: 300px;" loading="lazy">
-                                </c:when>
-                                <c:otherwise>
-                                    <span class="text-muted small">Sin imagen</span>
-                                </c:otherwise>
-                            </c:choose>
+                                                       <c:choose>
+                                                           <c:when test="${fn:endsWith(fn:toLowerCase(respuesta.imagenUrl), '.pdf')}">
+                                                               <a href="<c:out value='${respuesta.imagenUrl}' />" target="_blank" rel="noopener"
+                                                                  class="btn btn-sm btn-outline-danger">📄 Ver PDF</a>
+                                                           </c:when>
+                                                           <c:when test="${not empty respuesta.imagenUrl}">
+                                                               <img src="<c:out value='${respuesta.imagenUrl}' />" alt="Imagen adjunta"
+                                                                    class="img-fluid rounded" style="max-height: 300px;" loading="lazy">
+                                                           </c:when>
+                                                           <c:otherwise>
+                                                               <span class="text-muted small">Sin archivo adjunto</span>
+                                                           </c:otherwise>
+                                                       </c:choose>
 
                                                         <div class="mt-2 d-flex flex-wrap gap-2">
                                                             <a href="${pageContext.request.contextPath}/duda?id=${duda.id}&comentar=${respuesta.id}#formImagen"
@@ -107,10 +111,16 @@
                                                 <span class="text-muted"> · <c:out value="${comentario.fechaPublicacion}" /></span>
                                             </div>
                                             <p class="mb-1"><c:out value="${comentario.mensaje}" /></p>
-                                            <c:if test="${not empty comentario.imagenUrl}">
-                                                <img src="<c:out value='${comentario.imagenUrl}' />" alt="Imagen adjunta"
-                                                     class="img-fluid rounded" style="max-height: 200px;" loading="lazy">
-                                            </c:if>
+                                                                                       <c:choose>
+                                                                                           <c:when test="${fn:endsWith(fn:toLowerCase(comentario.imagenUrl), '.pdf')}">
+                                                                                               <a href="<c:out value='${comentario.imagenUrl}' />" target="_blank" rel="noopener"
+                                                                                                  class="btn btn-sm btn-outline-danger">📄 Ver PDF</a>
+                                                                                           </c:when>
+                                                                                           <c:when test="${not empty comentario.imagenUrl}">
+                                                                                               <img src="<c:out value='${comentario.imagenUrl}' />" alt="Imagen adjunta"
+                                                                                                    class="img-fluid rounded" style="max-height: 200px;" loading="lazy">
+                                                                                           </c:when>
+                                                                                       </c:choose>
                                         </div>
                                     </c:forEach>
                                 </div>
@@ -163,10 +173,10 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="archivoImagen" class="form-label">Imagen <span class="text-muted">(opcional)</span></label>
-                                <input type="file" id="archivoImagen" class="form-control" accept="image/jpeg,image/png"
-                                       ${cloudinaryConfigurado ? '' : 'disabled'}>
-                                <small class="text-muted">JPG o PNG, hasta 5 MB. Se sube al publicar.</small>
+                                            <label for="archivoImagen" class="form-label">Imagen o PDF <span class="text-muted">(opcional)</span></label>
+                                            <input type="file" id="archivoImagen" class="form-control" accept="image/jpeg,image/png,application/pdf"
+                                                   ${cloudinaryConfigurado ? '' : 'disabled'}>
+                                            <small class="text-muted">JPG, PNG o PDF, hasta 10 MB. Se sube al publicar.</small>
 
                                 <c:if test="${not cloudinaryConfigurado}">
                                     <p class="alert alert-info mt-2 mb-0">La subida de imágenes aún no está configurada. Podés publicar sin imagen.</p>
