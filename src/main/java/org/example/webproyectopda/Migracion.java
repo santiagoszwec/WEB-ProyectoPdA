@@ -143,7 +143,7 @@ public class Migracion {
             }
 
             if (!existeColumna(conn, "publicacion", "fecha_limite")) {
-                stmt.executeUpdate("ALTER TABLE publicacion ADD COLUMN fecha_limite DATE git pullNULL AFTER fecha_publicacion");
+                stmt.executeUpdate("ALTER TABLE publicacion ADD COLUMN fecha_limite DATE NULL AFTER fecha_publicacion");
             }
 
 
