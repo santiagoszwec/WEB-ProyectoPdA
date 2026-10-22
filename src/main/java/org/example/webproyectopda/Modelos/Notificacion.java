@@ -11,6 +11,9 @@ public class Notificacion {
     private String mensaje;
     private int usuarioId;
     private Integer publicacionId;
+    private Integer cursoId;
+    private boolean esDuda;
+    private boolean publicacionActiva;
 
     public Notificacion() {
     }
@@ -78,6 +81,29 @@ public class Notificacion {
 
     public void setPublicacionId(Integer publicacionId) {
         this.publicacionId = publicacionId;
+    }
+
+    public Integer getCursoId() {
+        return cursoId;
+    }
+
+    public void setCursoId(Integer cursoId) {
+        this.cursoId = cursoId;
+    }
+    public boolean isEsDuda() {
+        return esDuda;
+    }
+
+    public void setEsDuda(boolean esDuda) {
+        this.esDuda = esDuda;
+    }
+
+    public boolean isPublicacionActiva() {
+        return publicacionActiva;
+    }
+
+    public void setPublicacionActiva(boolean publicacionActiva) {
+        this.publicacionActiva = publicacionActiva;
     }
 
     @Override

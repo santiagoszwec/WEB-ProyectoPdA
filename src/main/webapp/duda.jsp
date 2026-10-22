@@ -43,15 +43,7 @@
                                 <c:out value="${duda.estado}" />
                             </span>
                         </div>
-                        <h1 class="h3 mb-3">
-                            <c:out value="${duda.titulo}" />
-                        </h1>
-                        <c:if test="${not empty duda.fechaLimite}">
-                            <p class="text-muted small">
-                                <strong>Fecha límite:</strong>
-                                <c:out value="${duda.fechaLimite}" />
-                            </p>
-                        </c:if>
+
                         <p class="mb-2"><c:out value="${duda.mensaje}" /></p>
 
                         <c:if test="${not empty duda.imagenUrl}">
@@ -68,9 +60,9 @@
                 </c:if>
 
                 <c:forEach var="respuesta" items="${respuestas}">
-                    <div class="card mb-3 ${respuesta.destacado ? 'border-success' : ''}">
+                    <div id="respuesta-${respuesta.id}"
+                         class="card mb-3 ${respuesta.destacado ? 'border-success' : ''} ${respuestaAComentar.id == respuesta.id ? 'border-primary border-2' : ''}">
                         <div class="card-body">
-
                             <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                                 <strong><c:out value="${respuesta.autorNombre}" /></strong>
                                 <span class="text-muted small"><c:out value="${respuesta.fechaPublicacion}" /></span>
@@ -90,6 +82,11 @@
                                     <span class="text-muted small">Sin imagen</span>
                                 </c:otherwise>
                             </c:choose>
+
+                            <div class="mt-2">
+                                <a href="${pageContext.request.contextPath}/duda?id=${duda.id}&comentar=${respuesta.id}#formImagen"
+                                   class="btn btn-sm btn-outline-secondary">Comentar</a>
+                            </div>
 
                             <c:if test="${not empty respuesta.comentarios}">
                                 <div class="mt-3 ms-4 ps-3 border-start">
@@ -112,14 +109,26 @@
                     </div>
                 </c:forEach>
 
-                <h2 class="h5 mt-4 mb-3">Responder</h2>
+                <c:choose>
+                    <c:when test="${not empty respuestaAComentar}">
+                        <h2 class="h5 mt-4 mb-2">
+                            Comentar la respuesta de <c:out value="${respuestaAComentar.autorNombre}" />
+                        </h2>
+                        <blockquote class="border-start ps-3 text-muted small mb-3">
+                            <c:out value="${respuestaAComentar.mensaje}" />
+                        </blockquote>
+                    </c:when>
+                    <c:otherwise>
+                        <h2 class="h5 mt-4 mb-3">Responder</h2>
+                    </c:otherwise>
+                </c:choose>
+
+                <c:if test="${not empty errorRespuesta}">
+                    <div class="alert alert-danger" role="alert"><c:out value="${errorRespuesta}" /></div>
+                </c:if>
 
                 <c:choose>
-                    <c:when test="${puedeResponder}">
-
-                        <c:if test="${not empty errorRespuesta}">
-                            <div class="alert alert-danger" role="alert"><c:out value="${errorRespuesta}" /></div>
-                        </c:if>
+                    <c:when test="${puedeResponder or not empty respuestaAComentar}">
 
                         <form id="formImagen" action="${pageContext.request.contextPath}/duda" method="post"
                               class="card card-body shadow-sm"
@@ -128,11 +137,17 @@
                               data-configurado="${cloudinaryConfigurado}">
 
                             <input type="hidden" name="id" value="${duda.id}">
+                            <c:if test="${not empty respuestaAComentar}">
+                                <input type="hidden" name="comentar" value="${respuestaAComentar.id}">
+                            </c:if>
                             <input type="hidden" id="imagenUrl" name="imagenUrl" value="<c:out value='${imagenUrl}' />">
                             <input type="hidden" id="imagenPublicId" name="imagenPublicId" value="<c:out value='${imagenPublicId}' />">
 
                             <div class="mb-3">
-                                <label for="texto" class="form-label">Tu respuesta <span class="text-danger">*</span></label>
+                                <label for="texto" class="form-label">
+                                    ${not empty respuestaAComentar ? 'Tu comentario' : 'Tu respuesta'}
+                                    <span class="text-danger">*</span>
+                                </label>
                                 <textarea id="texto" name="texto" class="form-control" rows="4"
                                           maxlength="2000" required><c:out value="${texto}" /></textarea>
                             </div>
@@ -154,8 +169,17 @@
                                 <p id="estadoImagen" class="small mt-2 mb-0" role="status" aria-live="polite"></p>
                             </div>
 
-                            <div>
-                                <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar">Publicar</button>
+                            <div class="d-flex gap-2">
+                                <c:choose>
+                                    <c:when test="${not empty respuestaAComentar}">
+                                        <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Responder">Responder</button>
+                                        <a href="${pageContext.request.contextPath}/duda?id=${duda.id}#respuesta-${respuestaAComentar.id}"
+                                           class="btn btn-outline-secondary">Cancelar</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar">Publicar</button>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </form>
 

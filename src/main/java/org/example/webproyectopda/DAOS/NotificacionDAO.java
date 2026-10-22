@@ -47,17 +47,21 @@ public class NotificacionDAO {
     public static List<Notificacion> listarPorUsuario(int usuarioId, TipoNotificacion tipo, boolean masAntiguasPrimero)
             throws SQLException {
         List<Notificacion> notificaciones = new ArrayList<>();
-        String sql = "SELECT id, fecha, tipo, mensaje, usuario_id, publicacion_id "
-                + "FROM notificacion WHERE usuario_id = ?";
+        String sql = "SELECT n.id, n.fecha, n.tipo, n.mensaje, n.usuario_id, n.publicacion_id, "
+                + "p.curso_id, p.activa AS publicacion_activa, (d.id IS NOT NULL) AS es_duda "
+                + "FROM notificacion n "
+                + "LEFT JOIN publicacion p ON p.id = n.publicacion_id "
+                + "LEFT JOIN duda d ON d.id = p.id "
+                + "WHERE n.usuario_id = ?";
 
         if (tipo != null) {
-            sql += " AND tipo = ?";
+            sql += " AND n.tipo = ?";
         }
 
         if (masAntiguasPrimero) {
-            sql += " ORDER BY fecha ASC, id ASC";
+            sql += " ORDER BY n.fecha ASC, n.id ASC";
         } else {
-            sql += " ORDER BY fecha DESC, id DESC";
+            sql += " ORDER BY n.fecha DESC, n.id DESC";
         }
 
         try (Connection conexion = ConexionDB.obtenerConexion();
@@ -98,6 +102,10 @@ public class NotificacionDAO {
 
         int publicacionId = resultado.getInt("publicacion_id");
         notificacion.setPublicacionId(resultado.wasNull() ? null : publicacionId);
+        int cursoId = resultado.getInt("curso_id");
+        notificacion.setCursoId(resultado.wasNull() ? null : cursoId);
+        notificacion.setEsDuda(resultado.getBoolean("es_duda"));
+        notificacion.setPublicacionActiva(resultado.getBoolean("publicacion_activa"));
         return notificacion;
     }
 }
