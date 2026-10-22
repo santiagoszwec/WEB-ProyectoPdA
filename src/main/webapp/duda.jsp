@@ -83,10 +83,20 @@
                                 </c:otherwise>
                             </c:choose>
 
-                            <div class="mt-2">
-                                <a href="${pageContext.request.contextPath}/duda?id=${duda.id}&comentar=${respuesta.id}#formImagen"
-                                   class="btn btn-sm btn-outline-secondary">Comentar</a>
-                            </div>
+                                                        <div class="mt-2 d-flex flex-wrap gap-2">
+                                                            <a href="${pageContext.request.contextPath}/duda?id=${duda.id}&comentar=${respuesta.id}#formImagen"
+                                                               class="btn btn-sm btn-outline-secondary">Comentar</a>
+
+                                                            <c:if test="${puedeMarcarUtil}">
+                                                                <form method="post" action="${pageContext.request.contextPath}/duda" class="d-inline"
+                                                                      onsubmit="return confirm('¿Marcar esta respuesta como la más útil? La duda quedará resuelta.');">
+                                                                    <input type="hidden" name="accion" value="marcarUtil">
+                                                                    <input type="hidden" name="id" value="${duda.id}">
+                                                                    <input type="hidden" name="respuesta" value="${respuesta.id}">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-success">Marcar como más útil</button>
+                                                                </form>
+                                                            </c:if>
+                                                        </div>
 
                             <c:if test="${not empty respuesta.comentarios}">
                                 <div class="mt-3 ms-4 ps-3 border-start">
