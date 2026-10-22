@@ -9,18 +9,19 @@ import jakarta.servlet.http.HttpSession;
 import org.example.webproyectopda.DAOS.ComentarioDAO;
 import org.example.webproyectopda.DAOS.DudaDAO;
 import org.example.webproyectopda.DAOS.InscripcionDAO;
+import org.example.webproyectopda.ENUMS.EstadoDuda;
+import org.example.webproyectopda.ENUMS.TipoNotificacion;
 import org.example.webproyectopda.ENUMS.TipoRol;
 import org.example.webproyectopda.Modelos.Comentario;
 import org.example.webproyectopda.Modelos.Duda;
-import org.example.webproyectopda.Modelos.Usuario;
-import org.example.webproyectopda.ENUMS.EstadoDuda;
-import org.example.webproyectopda.ENUMS.TipoNotificacion;
 import org.example.webproyectopda.Modelos.Notificacion;
+import org.example.webproyectopda.Modelos.Usuario;
 import org.example.webproyectopda.Utilidades.ConfiguracionCloudinary;
 import org.example.webproyectopda.Utilidades.ImagenCloudinary;
-import java.time.LocalDate;
+
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,9 +30,7 @@ import java.util.Map;
 @WebServlet("/duda")
 public class DudaServlet extends HttpServlet {
 
-
     private static final int MAX_RESPUESTA = 2000;
-
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -47,7 +46,6 @@ public class DudaServlet extends HttpServlet {
         moverMensaje(sesion, request, "dudaMensaje");
         moverMensaje(sesion, request, "dudaError");
 
-
         int dudaId;
         try {
             dudaId = Integer.parseInt(request.getParameter("id"));
@@ -57,7 +55,6 @@ public class DudaServlet extends HttpServlet {
         }
 
         try {
-
             Duda duda = DudaDAO.buscarPorId(dudaId);
             if (duda == null || duda.isDadaDeBaja()) {
                 mostrarError(request, response, "La duda no existe o fue dada de baja.");
@@ -75,6 +72,7 @@ public class DudaServlet extends HttpServlet {
             mostrarError(request, response, "No se pudo cargar la duda. Intentá de nuevo más tarde.");
         }
     }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -98,7 +96,9 @@ public class DudaServlet extends HttpServlet {
         String texto = texto(request.getParameter("texto"));
         String imagenUrl = texto(request.getParameter("imagenUrl")).strip();
         String publicId = texto(request.getParameter("imagenPublicId")).strip();
-        request.setAttribute("texto", texto); // conservar lo ingresado
+        String comentarParam = request.getParameter("comentar");
+        boolean esComentario = comentarParam != null && !comentarParam.isBlank();
+        request.setAttribute("texto", texto);
 
         Duda duda = null;
         try {
@@ -111,44 +111,61 @@ public class DudaServlet extends HttpServlet {
                 mostrarError(request, response, "No estás inscripto en el curso de esta duda.");
                 return;
             }
-            if (duda.getEstado() != EstadoDuda.Abierta) {
+
+            Comentario respuestaComentada = null;
+            if (esComentario) {
+                List<Comentario> respuestas = armarRespuestas(ComentarioDAO.listarDeDuda(duda.getId()));
+                respuestaComentada = buscarRespuesta(respuestas, comentarParam);
+                if (respuestaComentada == null) {
+                    throw new IllegalArgumentException("La respuesta que querés comentar no existe.");
+                }
+            } else if (duda.getEstado() != EstadoDuda.Abierta) {
                 throw new IllegalArgumentException("La duda ya está resuelta: no admite nuevas respuestas.");
             }
 
+            String queEs = esComentario ? "El comentario" : "La respuesta";
             if (texto.isBlank()) {
-                throw new IllegalArgumentException("La respuesta no puede estar vacía.");
+                throw new IllegalArgumentException(queEs + " no puede estar vacío/a.");
             }
             if (texto.length() > MAX_RESPUESTA) {
-                throw new IllegalArgumentException("La respuesta no puede superar los " + MAX_RESPUESTA + " caracteres.");
+                throw new IllegalArgumentException(queEs + " no puede superar los " + MAX_RESPUESTA + " caracteres.");
             }
             ImagenCloudinary.validar(imagenUrl, publicId);
             request.setAttribute("imagenUrl", imagenUrl);
             request.setAttribute("imagenPublicId", publicId);
 
-            Comentario respuesta = new Comentario(texto.strip(),
+            Integer padreId = esComentario ? respuestaComentada.getId() : null;
+            Comentario nuevo = new Comentario(texto.strip(),
                     imagenUrl.isEmpty() ? null : imagenUrl,
-                    LocalDate.now(), usuario.getId(), duda.getId(), null);
-            respuesta.setImagenPublicId(publicId.isEmpty() ? null : publicId);
+                    LocalDate.now(), usuario.getId(), duda.getId(), padreId);
+            nuevo.setImagenPublicId(publicId.isEmpty() ? null : publicId);
 
             Notificacion notificacion = null;
-            if (duda.getAutorNombre() != null && duda.getUsuarioId() != usuario.getId()) {
+            if (!esComentario && duda.getAutorNombre() != null && duda.getUsuarioId() != usuario.getId()) {
                 notificacion = new Notificacion(LocalDate.now(), TipoNotificacion.Respuesta,
                         usuario.getNombre() + " respondió tu duda: \"" + resumir(duda.getMensaje()) + "\"",
                         duda.getUsuarioId(), duda.getId());
             }
 
-            ComentarioDAO.crearRespuesta(respuesta, notificacion);
-            sesion.setAttribute("dudaMensaje", "Respuesta publicada correctamente.");
-            response.sendRedirect(request.getContextPath() + "/duda?id=" + duda.getId());
+            ComentarioDAO.crearRespuesta(nuevo, notificacion);
+
+            if (esComentario) {
+                sesion.setAttribute("dudaMensaje", "Comentario publicado correctamente.");
+                response.sendRedirect(request.getContextPath() + "/duda?id=" + duda.getId()
+                        + "#respuesta-" + respuestaComentada.getId());
+            } else {
+                sesion.setAttribute("dudaMensaje", "Respuesta publicada correctamente.");
+                response.sendRedirect(request.getContextPath() + "/duda?id=" + duda.getId());
+            }
 
         } catch (IllegalArgumentException e) {
             volverAlFormulario(request, response, duda, usuario, e.getMessage());
         } catch (SQLException | RuntimeException e) {
-            log("No se pudo guardar la respuesta a la duda " + dudaId, e);
+            log("No se pudo guardar en la duda " + dudaId, e);
             if (duda == null) {
                 mostrarError(request, response, "No se pudo cargar la duda. Intentá de nuevo más tarde.");
             } else {
-                volverAlFormulario(request, response, duda, usuario, "No se pudo guardar la respuesta. Intentá nuevamente.");
+                volverAlFormulario(request, response, duda, usuario, "No se pudo guardar. Intentá nuevamente.");
             }
         }
     }
@@ -158,6 +175,16 @@ public class DudaServlet extends HttpServlet {
 
         List<Comentario> respuestas = armarRespuestas(ComentarioDAO.listarDeDuda(duda.getId()));
 
+        Comentario respuestaAComentar = null;
+        String comentarParam = request.getParameter("comentar");
+        if (comentarParam != null && !comentarParam.isBlank()) {
+            respuestaAComentar = buscarRespuesta(respuestas, comentarParam);
+            if (respuestaAComentar == null && request.getAttribute("errorRespuesta") == null) {
+                request.setAttribute("errorRespuesta", "La respuesta que querés comentar no existe.");
+            }
+        }
+        request.setAttribute("respuestaAComentar", respuestaAComentar);
+
         request.setAttribute("duda", duda);
         request.setAttribute("respuestas", respuestas);
         request.setAttribute("esAutorDeLaDuda", duda.getUsuarioId() == usuario.getId());
@@ -165,7 +192,6 @@ public class DudaServlet extends HttpServlet {
         prepararFormulario(request);
         request.getRequestDispatcher("/duda.jsp").forward(request, response);
     }
-
 
     private List<Comentario> armarRespuestas(List<Comentario> todos) {
         Map<Integer, Comentario> respuestasPorId = new LinkedHashMap<>();
@@ -186,6 +212,18 @@ public class DudaServlet extends HttpServlet {
         return new ArrayList<>(respuestasPorId.values());
     }
 
+    private Comentario buscarRespuesta(List<Comentario> respuestas, String idTexto) {
+        try {
+            int id = Integer.parseInt(idTexto.strip());
+            for (Comentario respuesta : respuestas) {
+                if (respuesta.getId() == id) {
+                    return respuesta;
+                }
+            }
+        } catch (NumberFormatException e) {
+        }
+        return null;
+    }
 
     private boolean puedeVerCurso(Usuario usuario, int cursoId) {
         return usuario.getRol() == TipoRol.Admin
