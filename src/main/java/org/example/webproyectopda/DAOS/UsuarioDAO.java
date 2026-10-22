@@ -148,8 +148,13 @@ public class UsuarioDAO {
     }
 
     // Edición del propio perfil: no permite cambiar rol ni estado de la cuenta.
+    // Si no se envía contraseña nueva, se deja la actual sin tocarla.
     public static boolean actualizarPerfil(Usuario usuario) {
-        String sql = "UPDATE usuario SET nombre = ?, correo = ?, anio_de_generacion = ?, contrasenia = ? WHERE id = ?";
+        boolean cambiaContrasenia = usuario.getContrasenia() != null;
+
+        String sql = cambiaContrasenia
+                ? "UPDATE usuario SET nombre = ?, correo = ?, anio_de_generacion = ?, contrasenia = ? WHERE id = ?"
+                : "UPDATE usuario SET nombre = ?, correo = ?, anio_de_generacion = ? WHERE id = ?";
 
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
@@ -157,8 +162,13 @@ public class UsuarioDAO {
             sentencia.setString(1, usuario.getNombre());
             sentencia.setString(2, usuario.getCorreo());
             sentencia.setInt(3, usuario.getAnioDeGeneracion());
-            sentencia.setString(4, usuario.getContrasenia());
-            sentencia.setInt(5, usuario.getId());
+
+            if (cambiaContrasenia) {
+                sentencia.setString(4, usuario.getContrasenia());
+                sentencia.setInt(5, usuario.getId());
+            } else {
+                sentencia.setInt(4, usuario.getId());
+            }
 
             return sentencia.executeUpdate() == 1;
         } catch (SQLException e) {
