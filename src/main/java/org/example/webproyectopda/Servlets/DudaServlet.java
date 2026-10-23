@@ -129,13 +129,22 @@ public class DudaServlet extends HttpServlet {
             }
 
             String queEs = esComentario ? "El comentario" : "La respuesta";
+            String errorTexto = null;
             if (texto.isBlank()) {
-                throw new IllegalArgumentException(queEs + " no puede estar vacío/a.");
+                errorTexto = queEs + " no puede estar vacío/a.";
+            } else if (texto.length() > MAX_RESPUESTA) {
+                errorTexto = queEs + " no puede superar los " + MAX_RESPUESTA + " caracteres.";
             }
-            if (texto.length() > MAX_RESPUESTA) {
-                throw new IllegalArgumentException(queEs + " no puede superar los " + MAX_RESPUESTA + " caracteres.");
+            if (errorTexto != null) {
+                request.setAttribute("errorTexto", errorTexto);
+                throw new IllegalArgumentException(errorTexto);
             }
-            ImagenCloudinary.validar(imagenUrl, publicId);
+            try {
+                ImagenCloudinary.validar(imagenUrl, publicId);
+            } catch (IllegalArgumentException e) {
+                request.setAttribute("errorImagen", e.getMessage());
+                throw e;
+            }
             request.setAttribute("imagenUrl", imagenUrl);
             request.setAttribute("imagenPublicId", publicId);
 

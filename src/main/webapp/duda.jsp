@@ -114,7 +114,7 @@
                                                                                        <c:choose>
                                                                                            <c:when test="${fn:endsWith(fn:toLowerCase(comentario.imagenUrl), '.pdf')}">
                                                                                                <a href="<c:out value='${comentario.imagenUrl}' />" target="_blank" rel="noopener"
-                                                                                                  class="btn btn-sm btn-outline-danger">📄 Ver PDF</a>
+                                                                                                  class="btn btn-sm btn-outline-secondary">📄 Ver PDF</a>
                                                                                            </c:when>
                                                                                            <c:when test="${not empty comentario.imagenUrl}">
                                                                                                <img src="<c:out value='${comentario.imagenUrl}' />" alt="Imagen adjunta"
@@ -143,7 +143,7 @@
                     </c:otherwise>
                 </c:choose>
 
-                <c:if test="${not empty errorRespuesta}">
+                <c:if test="${not empty errorRespuesta and empty errorTexto and empty errorImagen}">
                     <div class="alert alert-danger" role="alert"><c:out value="${errorRespuesta}" /></div>
                 </c:if>
 
@@ -168,14 +168,23 @@
                                     ${not empty respuestaAComentar ? 'Tu comentario' : 'Tu respuesta'}
                                     <span class="text-danger">*</span>
                                 </label>
-                                <textarea id="texto" name="texto" class="form-control" rows="4"
-                                          maxlength="2000" required><c:out value="${texto}" /></textarea>
+                                                               <textarea id="texto" name="texto" rows="4" maxlength="2000" required
+                                                                         class="form-control ${not empty errorTexto ? 'is-invalid' : ''}"
+                                                                         ${not empty errorTexto ? 'aria-describedby="errorTexto"' : ''}><c:out value="${texto}" /></textarea>
+                                                               <c:if test="${not empty errorTexto}">
+                                                                   <div id="errorTexto" class="invalid-feedback"><c:out value="${errorTexto}" /></div>
+                                                               </c:if>
                             </div>
 
                             <div class="mb-3">
                                             <label for="archivoImagen" class="form-label">Imagen o PDF <span class="text-muted">(opcional)</span></label>
-                                            <input type="file" id="archivoImagen" class="form-control" accept="image/jpeg,image/png,application/pdf"
-                                                   ${cloudinaryConfigurado ? '' : 'disabled'}>
+                                <input type="file" id="archivoImagen" accept="image/jpeg,image/png,application/pdf"
+                                       class="form-control ${not empty errorImagen ? 'is-invalid' : ''}"
+                                       ${not empty errorImagen ? 'aria-describedby="errorImagen"' : ''}
+                                       ${cloudinaryConfigurado ? '' : 'disabled'}>
+                                <c:if test="${not empty errorImagen}">
+                                    <div id="errorImagen" class="invalid-feedback"><c:out value="${errorImagen}" /></div>
+                                </c:if>
                                             <small class="text-muted">JPG, PNG o PDF, hasta 10 MB. Se sube al publicar.</small>
 
                                 <c:if test="${not cloudinaryConfigurado}">
@@ -189,16 +198,18 @@
                                 <p id="estadoImagen" class="small mt-2 mb-0" role="status" aria-live="polite"></p>
                             </div>
 
-                            <div class="d-flex gap-2">
-                                <c:choose>
-                                                                          <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar comentario">Publicar comentario</button>
-                                        <a href="${pageContext.request.contextPath}/duda?id=${duda.id}#respuesta-${respuestaAComentar.id}"
-                                           class="btn btn-outline-secondary">Cancelar</a>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar respuesta">Publicar respuesta</button>                                    </c:otherwise>
-                                </c:choose>
-                            </div>
+                                                       <div class="d-flex gap-2">
+                                                           <c:choose>
+                                                               <c:when test="${not empty respuestaAComentar}">
+                                                                   <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar comentario">Publicar comentario</button>
+                                                                   <a href="${pageContext.request.contextPath}/duda?id=${duda.id}#respuesta-${respuestaAComentar.id}"
+                                                                      class="btn btn-outline-secondary">Cancelar</a>
+                                                               </c:when>
+                                                               <c:otherwise>
+                                                                   <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar respuesta">Publicar respuesta</button>
+                                                               </c:otherwise>
+                                                           </c:choose>
+                                                       </div>
                         </form>
 
                         <script src="${pageContext.request.contextPath}/js/subida-imagen.js" defer></script>
