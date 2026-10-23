@@ -13,7 +13,7 @@
                   action="${pageContext.request.contextPath}/notificaciones"
                   class="row g-3 align-items-end mb-3">
 
-                <div class="col-md-6">
+                                <div class="col-md-4">
                     <label for="tipo" class="form-label">Tipo</label>
                     <select id="tipo" name="tipo" class="form-select">
                         <option value="">Todos</option>
@@ -26,7 +26,7 @@
                     </select>
                 </div>
 
-                <div class="col-md-6">
+                                <div class="col-md-4">
                     <label for="orden" class="form-label">Orden</label>
                     <select id="orden" name="orden" class="form-select">
                         <option value="desc"
@@ -42,11 +42,11 @@
 
                 <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        Buscar
+                        Aplicar filtros
                     </button>
                     <a href="${pageContext.request.contextPath}/notificaciones"
                        class="btn btn-outline-secondary">
-                        Limpiar
+                        Limpiar filtros
                     </a>
                 </div>
             </form>
