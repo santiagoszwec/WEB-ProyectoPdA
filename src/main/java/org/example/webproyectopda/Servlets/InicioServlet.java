@@ -28,7 +28,12 @@ public class InicioServlet extends HttpServlet {
         }
         Usuario usuario = (Usuario) sesion.getAttribute("usuarioLogueado");
         request.setAttribute("usuario", usuario);
-        request.setAttribute("publicaciones", PublicacionDAO.listarUltimas(usuario.getId()));
+        try {
+            request.setAttribute("publicaciones", PublicacionDAO.listarUltimas(usuario.getId()));
+        } catch (RuntimeException e) {
+            log("Error al cargar el inicio del usuario " + usuario.getId(), e);
+            request.setAttribute("error", "No se pudieron cargar las últimas publicaciones. Intentá de nuevo más tarde.");
+        }
         request.getRequestDispatcher("/inicio.jsp").forward(request, response);
     }
 }
