@@ -28,3 +28,7 @@ h1 {
 main {
     padding-top: 24px !important;
 }
+
+.nav-pills .nav-link.active {
+    background-color: var(--color-marca);
+}
