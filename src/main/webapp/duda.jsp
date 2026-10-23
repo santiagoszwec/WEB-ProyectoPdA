@@ -76,7 +76,7 @@
                                                        <c:choose>
                                                            <c:when test="${fn:endsWith(fn:toLowerCase(respuesta.imagenUrl), '.pdf')}">
                                                                <a href="<c:out value='${respuesta.imagenUrl}' />" target="_blank" rel="noopener"
-                                                                  class="btn btn-sm btn-outline-danger">📄 Ver PDF</a>
+                                                                  class="btn btn-sm btn-outline-secondary">📄 Ver PDF</a>
                                                            </c:when>
                                                            <c:when test="${not empty respuesta.imagenUrl}">
                                                                <img src="<c:out value='${respuesta.imagenUrl}' />" alt="Imagen adjunta"
@@ -191,14 +191,12 @@
 
                             <div class="d-flex gap-2">
                                 <c:choose>
-                                    <c:when test="${not empty respuestaAComentar}">
-                                        <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Responder">Responder</button>
+                                                                          <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar comentario">Publicar comentario</button>
                                         <a href="${pageContext.request.contextPath}/duda?id=${duda.id}#respuesta-${respuestaAComentar.id}"
                                            class="btn btn-outline-secondary">Cancelar</a>
                                     </c:when>
                                     <c:otherwise>
-                                        <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar">Publicar</button>
-                                    </c:otherwise>
+                                        <button type="submit" id="botonGuardar" class="btn btn-primary" data-texto="Publicar respuesta">Publicar respuesta</button>                                    </c:otherwise>
                                 </c:choose>
                             </div>
                         </form>
