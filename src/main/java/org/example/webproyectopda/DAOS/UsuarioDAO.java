@@ -8,6 +8,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class UsuarioDAO {
 
     public static Usuario buscarPorId(int id) {
@@ -150,7 +152,7 @@ public class UsuarioDAO {
     // Edición del propio perfil: no permite cambiar rol ni estado de la cuenta.
     // Si no se envía contraseña nueva, se deja la actual sin tocarla.
     public static boolean actualizarPerfil(Usuario usuario) {
-        boolean cambiaContrasenia = usuario.getContrasenia() != null;
+        boolean cambiaContrasenia = usuario.getContrasenia() != null && !usuario.getContrasenia().isEmpty();
 
         String sql = cambiaContrasenia
                 ? "UPDATE usuario SET nombre = ?, correo = ?, anio_de_generacion = ?, contrasenia = ? WHERE id = ?"
@@ -164,13 +166,19 @@ public class UsuarioDAO {
             sentencia.setInt(3, usuario.getAnioDeGeneracion());
 
             if (cambiaContrasenia) {
-                sentencia.setString(4, usuario.getContrasenia());
+                String hash = BCrypt.hashpw(
+                        usuario.getContrasenia(),
+                        BCrypt.gensalt(12)
+                );
+
+                sentencia.setString(4, hash);
                 sentencia.setInt(5, usuario.getId());
             } else {
                 sentencia.setInt(4, usuario.getId());
             }
 
             return sentencia.executeUpdate() == 1;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -193,30 +201,38 @@ public class UsuarioDAO {
         }
     }
 
-    public static Usuario iniciarSesion(String correo, String contrasenia){
-        String sql = "SELECT * FROM usuario WHERE correo = ? AND contrasenia = ?";
+    public static Usuario iniciarSesion(String correo, String contrasenia) {
+        String sql = "SELECT * FROM usuario WHERE correo = ?";
 
-        try(
-            Connection conexion = ConexionDB.obtenerConexion();
-            PreparedStatement sentencia = conexion.prepareStatement(sql)){
-
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
             sentencia.setString(1, correo);
-            sentencia.setString(2, contrasenia);
+            try (ResultSet fila = sentencia.executeQuery()) {
+                if (!fila.next()) {
+                    return null;
+                }
+                String hashGuardado = fila.getString("contrasenia");
+                if (hashGuardado == null) {
+                    return null;
+                }
 
-            ResultSet fila = sentencia.executeQuery();
-            if(fila.next()){
-                return new Usuario(
-                        fila.getInt("id"),
+                try {
+                    if (!BCrypt.checkpw(contrasenia, hashGuardado)) {
+                        return null;
+                    }
+                } catch (IllegalArgumentException e) {
+                    return null;
+                }
+
+                return new Usuario(fila.getInt("id"),
                         fila.getString("nombre"),
                         fila.getString("correo"),
                         fila.getInt("anio_de_generacion"),
                         TipoRol.valueOf(fila.getString("rol")),
-                        fila.getString("contrasenia"),
+                        hashGuardado,
                         fila.getBoolean("activo"));
             }
-            return null;
-
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -324,6 +340,41 @@ public class UsuarioDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void migrarContrasenias() {
+        String sqlSelect = "SELECT id, contrasenia FROM usuario";
+        String sqlUpdate = "UPDATE usuario SET contrasenia = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement consulta = conexion.prepareStatement(sqlSelect);
+             ResultSet filas = consulta.executeQuery()) {
+
+            while (filas.next()) {
+                int id = filas.getInt("id");
+                String password = filas.getString("contrasenia");
+
+                if (password == null || password.isBlank()) {
+                    continue;
+                }
+
+                if (password.matches("^\\$2[aby]\\$\\d{2}\\$.*")) {
+                    continue;
+                }
+
+                String hash = BCrypt.hashpw(password, BCrypt.gensalt(12));
+
+                try (PreparedStatement actualizacion =
+                             conexion.prepareStatement(sqlUpdate)) {
+                    actualizacion.setString(1, hash);
+                    actualizacion.setInt(2, id);
+                    actualizacion.executeUpdate();
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al migrar las contraseñas", e);
         }
     }
 

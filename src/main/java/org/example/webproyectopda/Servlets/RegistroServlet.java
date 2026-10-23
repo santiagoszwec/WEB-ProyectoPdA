@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.example.webproyectopda.DAOS.UsuarioDAO;
 import org.example.webproyectopda.ENUMS.TipoRol;
 import org.example.webproyectopda.Modelos.Usuario;
+import org.mindrot.jbcrypt.BCrypt;
 
 @WebServlet("/registro")
 public class RegistroServlet extends HttpServlet {
@@ -52,10 +53,13 @@ public class RegistroServlet extends HttpServlet {
             if (anioDeGeneracion < 2008 || anioDeGeneracion > 2027) {
                 request.setAttribute("error", "Año inválido.");
                 request.getRequestDispatcher("/registro.jsp").forward(request, response);
+                return;
             }
 
+            String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt(12));
+
             Usuario usuario = new Usuario(nombre.trim(), correo.trim(), anioDeGeneracion,
-                    TipoRol.Estudiante, password);
+                    TipoRol.Estudiante, passwordHash);
 
             UsuarioDAO.crear(usuario);
 
