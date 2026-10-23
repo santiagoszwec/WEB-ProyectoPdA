@@ -116,7 +116,7 @@ public class PerfilServlet extends HttpServlet {
 
         // Si no se ingresó contraseña nueva, se conserva la actual.
         String contrasenia = (password == null || password.isEmpty())
-                ? usuario.getContrasenia()
+                ? null
                 : password;
 
         Usuario actualizado = new Usuario(usuario.getId(), nombre.trim(), correo.trim(),

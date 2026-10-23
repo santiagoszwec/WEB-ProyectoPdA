@@ -5,6 +5,9 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
 
+import org.example.webproyectopda.DAOS.UsuarioDAO;
+import org.mindrot.jbcrypt.BCrypt;
+
 public class Migracion {
 
     public static void migrar() {
@@ -155,6 +158,7 @@ public class Migracion {
                 System.out.println("Tabla creada: " + nombreTabla);
             }
 
+            UsuarioDAO.migrarContrasenias();
             actualizarTablasExistentes(conn, stmt);
 
             System.out.println("Migracion completada exitosamente.");
