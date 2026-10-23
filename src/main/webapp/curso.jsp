@@ -377,12 +377,82 @@
                                             </a>
                                         </div>
                                     </c:if>
-                                    <c:if test="${esAdmin or publicacion.usuarioId == sessionScope.usuarioLogueado.id}">
-                                        <div class="mt-3">
+                                    <c:if test="${publicacion.usuarioId == sessionScope.usuarioLogueado.id}">
+                                        <div class="mt-3 d-flex justify-content-end gap-3">
                                             <a href="${pageContext.request.contextPath}/publicacion/editar?id=${publicacion.id}"
-                                               class="btn btn-sm btn-outline-secondary">
-                                                Editar publicación
+                                               class="text-secondary fs-5"
+                                               title="Editar publicación"
+                                               aria-label="Editar publicación">
+                                                <i class="bi bi-pencil-square"></i>
                                             </a>
+
+                                            <button type="button"
+                                                    class="btn p-0 border-0 bg-transparent text-danger fs-5"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalDesactivar${publicacion.id}"
+                                                    title="Eliminar publicación"
+                                                    aria-label="Eliminar publicación">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </div>
+                                        <div class="modal fade"
+                                             id="modalDesactivar${publicacion.id}"
+                                             tabindex="-1"
+                                             aria-labelledby="tituloDesactivar${publicacion.id}"
+                                             aria-hidden="true">
+
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content border-0 shadow">
+
+                                                    <div class="modal-header border-0 pb-0">
+                                                        <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center"
+                                                             style="width: 48px; height: 48px;">
+                                                            <i class="bi bi-exclamation-triangle fs-4"></i>
+                                                        </div>
+
+                                                        <button type="button"
+                                                                class="btn-close ms-auto"
+                                                                data-bs-dismiss="modal"
+                                                                aria-label="Cerrar"></button>
+                                                    </div>
+
+                                                    <div class="modal-body pt-3">
+                                                        <h5 class="modal-title fw-semibold mb-2"
+                                                            id="tituloDesactivar${publicacion.id}">
+                                                            ¿Eliminar esta publicación?
+                                                        </h5>
+
+                                                        <p class="text-muted mb-2">
+                                                            Vas a eliminar la publicación
+                                                            <strong><c:out value="${publicacion.titulo}" /></strong>.
+                                                        </p>
+
+                                                    </div>
+
+                                                    <div class="modal-footer border-0 pt-0">
+                                                        <button type="button"
+                                                                class="btn btn-light border"
+                                                                data-bs-dismiss="modal">
+                                                            Cancelar
+                                                        </button>
+
+                                                        <form action="${pageContext.request.contextPath}/publicacion/desactivar"
+                                                              method="post" class="m-0">
+
+                                                            <input type="hidden" name="publicacionId"
+                                                                   value="${publicacion.id}">
+
+                                                            <input type="hidden" name="cursoId"
+                                                                   value="${curso.id}">
+
+                                                            <button type="submit" class="btn btn-danger">
+                                                                <i class="bi bi-trash3 me-1"></i> Sí, eliminar
+                                                            </button>
+                                                        </form>
+                                                    </div>
+
+                                                </div>
+                                            </div>
                                         </div>
                                     </c:if>
                                 </div>

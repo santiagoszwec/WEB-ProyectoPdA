@@ -367,4 +367,19 @@ public class InscripcionDAO {
             throw new RuntimeException(e);
         }
     }
+    public static boolean eliminarInscripcion(int usuarioId, int cursoId) {
+        String sql = "DELETE FROM inscripcion WHERE usuario_id = ? AND curso_id = ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, usuarioId);
+            sentencia.setInt(2, cursoId);
+
+            return sentencia.executeUpdate() == 1;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

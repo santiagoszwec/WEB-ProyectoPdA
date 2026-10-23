@@ -23,19 +23,27 @@
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre</label>
                         <input type="text" class="form-control"
-                               id="nombre" name="nombre" required>
+                               id="nombre" name="nombre"
+                               placeholder="Juan Perez" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="correo" class="form-label">Correo electrónico</label>
                         <input type="email" class="form-control"
-                               id="correo" name="correo" required>
+                               id="correo" name="correo"
+                               placeholder="ejemplo@correo.com" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="password" class="form-label">Contraseña</label>
                         <input type="password" class="form-control"
                                id="password" name="password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="repetirPassword" class="form-label">Repetir contraseña</label>
+                        <input type="password" class="form-control"
+                               id="repetirPassword" name="repetirPassword" required>
                     </div>
 
                     <div class="mb-3">
