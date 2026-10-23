@@ -17,10 +17,13 @@
           href="${pageContext.request.contextPath}/estilos/general.css">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg"
-     style="background-color: #0B1F3A;">
-
+<nav class="navbar navbar-expand-lg navbar-dark navbar-ansaluni">
     <div class="container-fluid px-4">
+
+        <a href="${pageContext.request.contextPath}/inicio"
+           class="navbar-brand fw-bold fs-3 mb-0 p-0">
+            ANSALUNI
+        </a>
 
         <button class="navbar-toggler border-light"
                 type="button"
@@ -29,20 +32,10 @@
                 aria-controls="navbarSupportedContent"
                 aria-expanded="false"
                 aria-label="Abrir menú">
-
-            <span class="navbar-toggler-icon"
-                  style="filter: invert(1);">
-            </span>
+            <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse"
-             id="navbarSupportedContent">
-            <a href="${pageContext.request.contextPath}/inicio"
-               class="navbar-brand fw-bold fs-3 mb-0 p-0"
-               style="color: white !important; background: transparent !important; border: none !important; text-decoration: none;">
-                ANSALUNI
-            </a>
-
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <div class="ms-auto d-flex align-items-center gap-3">
                 <c:if test="${not empty sessionScope.usuarioLogueado}">
                     <span class="navbar-text text-white">
@@ -56,7 +49,6 @@
                             data-bs-target="#modalCerrarSesion">
                         Cerrar sesión
                     </button>
-
                 </c:if>
             </div>
         </div>
@@ -77,13 +69,11 @@
                     ¿Confirmás que querés cerrar la sesión?
                 </div>
                 <div class="modal-footer">
-
                     <button type="button" class="btn btn-outline-secondary"
                             data-bs-dismiss="modal">Cancelar</button>
 
-
                     <form action="${pageContext.request.contextPath}/logout" method="post" class="m-0">
-                        <button type="submit" class="btn btn-danger">Confirmar</button>
+                        <button type="submit" class="btn btn-danger">Cerrar sesión</button>
                     </form>
                 </div>
             </div>

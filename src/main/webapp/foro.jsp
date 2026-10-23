@@ -40,7 +40,7 @@
                         </div>
 
                         <div class="col-md-2 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Buscar</button>
+                            <button type="submit" class="btn btn-outline-secondaryclass="btn btn-primary">Buscar dudas</button>">Limpiar filtros</a>
                         </div>
                     </div>
 

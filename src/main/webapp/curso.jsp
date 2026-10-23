@@ -168,7 +168,7 @@
                                                 </div>
                                             </div>
 
-                                            <button type="submit" class="btn btn-primary">Publicar</button>
+                                            <button type="submit" class="btn btn-primary">Publicar en el curso</button>
                                         </form>
                                     </div>
                                 </div>
@@ -237,9 +237,9 @@
                         </div>
 
                         <div class="col-md-3 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Filtrar</button>
+                            <button type="submit" class="btn btn-primary">Filtrar material</button>
                             <a href="${pageContext.request.contextPath}/curso?id=${curso.id}"
-                               class="btn btn-outline-secondary">Limpiar</a>
+                               class="btn btn-outline-secondary">Limpiar filtros</a>
                         </div>
                     </div>
 
@@ -381,7 +381,7 @@
                                         <div class="mt-3">
                                             <a href="${pageContext.request.contextPath}/publicacion/editar?id=${publicacion.id}"
                                                class="btn btn-sm btn-outline-secondary">
-                                                Editar
+                                                Editar publicación
                                             </a>
                                         </div>
                                     </c:if>

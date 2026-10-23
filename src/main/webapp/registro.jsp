@@ -12,8 +12,8 @@
                 <h1 class="text-center mb-4">Registrarse</h1>
 
                 <c:if test="${not empty requestScope.error}">
-                    <div class="alert alert-danger">
-                            ${requestScope.error}
+                    <div class="alert alert-danger" role="alert">
+                        <c:out value="${requestScope.error}" />
                     </div>
                 </c:if>
 
@@ -40,8 +40,10 @@
 
                     <div class="mb-3">
                         <label for="anioDeGeneracion" class="form-label">Año de generación</label>
-                        <input type="text" class="form-control"
-                               id="anioDeGeneracion" name="anioDeGeneracion" required>
+                        <input type="number" class="form-control"
+                               id="anioDeGeneracion" name="anioDeGeneracion"
+                               min="2008" max="2027" placeholder="Ej.: 2025" required>
+                        <div class="form-text">Año en que ingresaste a la carrera.</div>
                     </div>
 
                     <div class="d-grid">

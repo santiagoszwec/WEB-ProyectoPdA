@@ -13,7 +13,15 @@
                     Iniciar sesión
                 </h1>
 
-                <c:if test="${not empty error}">
+                           <input type="email"
+                               class="form-control"
+                               id="correo"
+                                           <c:if test="${param.registro == 'ok'}">
+                    <div class="alert alert-success" role="alert">
+                        Cuenta creada correctamente. Ya podés iniciar sesión.
+                    </div>
+                </c:if>
+
                     <div class="alert alert-danger" role="alert">
                         <c:out value="${error}"/>
                     </div>
@@ -27,8 +35,11 @@
                             Correo electrónico
                         </label>
 
-                        <input type="email"
+                           <input type="email"
                                class="form-control"
+                               id="correo"
+                               placeholder="nombre@estudiantes.utec.edu.uy"
+                               autocomplete="email"
                                name="correo"
                                value="<c:out value='${correo}'/>"
                                required>
@@ -54,7 +65,7 @@
 
                         <a href="${pageContext.request.contextPath}/registro"
                            class="btn btn-outline-secondary">
-                            Registrarse
+                            Crear una cuenta
                         </a>
                     </div>
 

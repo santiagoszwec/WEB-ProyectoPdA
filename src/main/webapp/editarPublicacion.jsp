@@ -17,7 +17,7 @@
                     <div class="alert alert-danger" role="alert">
                         <c:out value="${error}" />
                     </div>
-                    <a href="${volverUrl}" class="btn btn-outline-secondary">Volver</a>
+                    <a href="${volverUrl}" class="btn btn-outline-secondary">Volver al curso</a>
                 </c:when>
 
                 <c:otherwise>
