@@ -72,7 +72,7 @@
                                         <td class="text-end">
                                             <a href="${pageContext.request.contextPath}/publicacion/editar?id=${publicacion.id}"
                                                class="btn btn-sm btn-outline-primary">
-                                                Editar
+                                                Editar publicación
                                             </a>
                                         </td>
                                     </tr>

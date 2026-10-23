@@ -86,8 +86,12 @@ public class LoginServlet extends HttpServlet {
 
             response.sendRedirect(request.getContextPath() + "/inicio");
 
-            }catch(Exception e){
-            e.printStackTrace();
+        } catch (RuntimeException e) {
+            log("Error al iniciar sesión con el correo " + correo, e);
+            if (!response.isCommitted()) {
+                volverConError(request, response,
+                        "No se pudo iniciar sesión en este momento. Intentá de nuevo más tarde.", correo);
+            }
         }
     }
 

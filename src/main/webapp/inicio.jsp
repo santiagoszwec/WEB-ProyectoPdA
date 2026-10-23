@@ -19,8 +19,14 @@
                 </p>
             </div>
 
+            <c:if test="${not empty error}">
+                <div class="alert alert-danger" role="alert">
+                    <c:out value="${error}" />
+                </div>
+            </c:if>
+
             <c:choose>
-                <c:when test="${empty publicaciones}">
+                <c:when test="${empty publicaciones and empty error}">
                     <div class="alert alert-info">
                         Todavía no hay publicaciones en tus cursos
                     </div>

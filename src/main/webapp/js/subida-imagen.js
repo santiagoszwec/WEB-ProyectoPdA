@@ -95,13 +95,13 @@ form.addEventListener("submit", async (evento) => {
     try {
         const archivo = archivoImagen.files[0];
         if (archivo && !imagenUrl.value) {
-            botonGuardar.textContent = "Subiendo archivo…";
+            botonGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Subiendo archivo…';
             mostrarEstado("Subiendo el archivo. Esperá un momento…");
             const imagen = await subirImagen(archivo);
             imagenUrl.value = imagen.url;
             imagenPublicId.value = imagen.publicId;
         }
-        botonGuardar.textContent = "Guardando…";
+        botonGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Guardando…';
         HTMLFormElement.prototype.submit.call(form);
         enviadoAlServidor = true;
     } catch (error) {

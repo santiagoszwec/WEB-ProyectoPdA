@@ -42,9 +42,9 @@
                         </select>
                     </div>
                     <div class="col-12 col-md-4 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Buscar</button>
+                        <button type="submit" class="btn btn-primary">Buscar cursos</button>
                         <a href="${pageContext.request.contextPath}/misCursos"
-                           class="btn btn-outline-secondary">Limpiar</a>
+                           class="btn btn-outline-secondary">Limpiar filtros</a>
                     </div>
                 </form>
             </c:if>
