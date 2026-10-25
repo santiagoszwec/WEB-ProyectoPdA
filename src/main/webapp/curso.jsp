@@ -377,6 +377,18 @@
                                             </a>
                                         </div>
                                     </c:if>
+                                    <c:if test="${puedeReportar}">
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalReportar"
+                                                    data-publicacion-id="${publicacion.id}"
+                                                    data-autor="<c:out value='${publicacion.autor}' />"
+                                                    data-mensaje="<c:out value='${publicacion.mensaje}' />">
+                                                <i class="bi bi-flag me-1"></i>Reportar
+                                            </button>
+                                        </div>
+                                    </c:if>
                                     <c:if test="${publicacion.usuarioId == sessionScope.usuarioLogueado.id}">
                                         <div class="mt-3 d-flex justify-content-end gap-3">
                                             <a href="${pageContext.request.contextPath}/publicacion/editar?id=${publicacion.id}"
@@ -488,6 +500,95 @@
         </div>
     </div>
 </div>
+
+<c:if test="${puedeReportar}">
+    <div class="modal fade" id="modalReportar" tabindex="-1"
+         aria-labelledby="tituloReportar" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="${pageContext.request.contextPath}/curso?id=${curso.id}"
+                      method="post" novalidate>
+                    <input type="hidden" name="accion" value="reportar">
+                    <input type="hidden" name="publicacionId" id="reportePublicacionId">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tituloReportar">Reportar publicación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <%-- Autor y mensaje de la publicación seleccionada (los completa el script de abajo) --%>
+                        <p class="mb-1"><strong>Autor:</strong> <span id="reporteAutor"></span></p>
+                        <p class="mb-3"><strong>Mensaje:</strong></p>
+                        <blockquote class="border-start border-3 ps-3 text-muted"
+                                    id="reporteMensaje" style="white-space: pre-wrap;"></blockquote>
+
+                        <%-- Error de validación, dentro del modal --%>
+                        <c:if test="${not empty errorReporte}">
+                            <div class="alert alert-danger py-2" role="alert" id="errorReporte">
+                                <c:out value="${errorReporte}" />
+                            </div>
+                        </c:if>
+
+                        <label for="reporteMotivo" class="form-label">Motivo del reporte</label>
+                        <textarea id="reporteMotivo" name="motivo" class="form-control"
+                                  rows="3" maxlength="1000"><c:out value="${valorMotivo}" /></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Enviar reporte</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            var modal = document.getElementById("modalReportar");
+            var motivo = document.getElementById("reporteMotivo");
+            var error = document.getElementById("errorReporte");
+
+            // Datos que manda el servidor si el reporte salió con error (para reabrir el modal)
+            var hayErrorEnReporte = ${not empty errorReporte ? 'true' : 'false'};
+            var idPublicacionConError = ${empty reportePublicacionId ? 0 : reportePublicacionId};
+            var reabriendo = false;
+
+            // Al abrirse: se completan autor, mensaje e id con los datos del botón "Reportar" apretado
+            modal.addEventListener("show.bs.modal", function (evento) {
+                var boton = evento.relatedTarget;
+                if (!boton) return;
+                document.getElementById("reporteAutor").textContent =
+                        boton.getAttribute("data-autor") || "Usuario eliminado";
+                document.getElementById("reporteMensaje").textContent =
+                        boton.getAttribute("data-mensaje");
+                document.getElementById("reportePublicacionId").value =
+                        boton.getAttribute("data-publicacion-id");
+
+                // Apertura normal: modal limpio. Si se reabre por un error, se conserva lo escrito y el error
+                if (!reabriendo) {
+                    motivo.value = "";
+                    if (error) error.style.display = "none";
+                }
+            });
+
+            // Si el servidor devolvió un error, se "aprieta" de nuevo el botón de esa publicación
+            // (cuando ya cargó todo, incluido el JS de Bootstrap)
+            if (hayErrorEnReporte) {
+                window.addEventListener("load", function () {
+                    var boton = document.querySelector('[data-publicacion-id="' + idPublicacionConError + '"]');
+                    if (boton) {
+                        reabriendo = true;
+                        boton.click();
+                    }
+                });
+            }
+        })();
+    </script>
+</c:if>
+
 
 <script>
     (function () {

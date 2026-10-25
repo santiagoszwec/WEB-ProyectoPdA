@@ -20,6 +20,7 @@ import java.util.List;
 public class CursoServlet extends HttpServlet {
 
     private static final int MAX_MENSAJE = Validaciones.MAX_MENSAJE;
+    private static final int MAX_MOTIVO = 1000;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -91,6 +92,11 @@ public class CursoServlet extends HttpServlet {
             if (usuario.getRol() != TipoRol.Admin
                     && !InscripcionDAO.existeInscripcion(usuario.getId(), curso.getId())) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "No podés publicar en este curso");
+                return;
+            }
+
+            if ("reportar".equals(request.getParameter("accion"))) {
+                reportarPublicacion(request, response, curso, usuario);
                 return;
             }
 
@@ -250,6 +256,60 @@ public class CursoServlet extends HttpServlet {
         }
     }
 
+    private void reportarPublicacion(HttpServletRequest request, HttpServletResponse response,
+                                     Curso curso, Usuario usuario) throws ServletException, IOException {
+
+        if (!InscripcionDAO.existeInscripcion(usuario.getId(), curso.getId())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tenés que estar inscripto en el curso para reportar");
+            return;
+        }
+
+        int publicacionId;
+        try {
+            publicacionId = Integer.parseInt(request.getParameter("publicacionId"));
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Publicación inválida");
+            return;
+        }
+        String motivo = request.getParameter("motivo");
+
+        Publicacion publicacion = PublicacionDAO.buscarPorId(publicacionId);
+        if (publicacion == null || publicacion.isDadaDeBaja() || publicacion.getCursoId() != curso.getId()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Publicación no disponible");
+            return;
+        }
+
+        String error = validarMotivo(motivo);
+        if (error != null) {
+            request.setAttribute("errorReporte", error);
+            request.setAttribute("valorMotivo", motivo);
+            request.setAttribute("reportePublicacionId", publicacionId);
+            mostrarCurso(request, response, curso, usuario);
+            return;
+        }
+
+        Reporte reporte = new Reporte(0, publicacion.getMensaje(), motivo.trim(), null,
+                LocalDate.now(), null, publicacion.getId(), null, usuario.getId());
+
+        if (!ReporteDAO.crear(reporte)) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "No se pudo registrar el reporte");
+            return;
+        }
+
+        request.getSession(false).setAttribute("mensajeExito", "El reporte fue enviado correctamente.");
+        response.sendRedirect(request.getContextPath() + "/curso?id=" + curso.getId());
+    }
+
+    private String validarMotivo(String motivo) {
+        if (motivo == null || motivo.isBlank()) {
+            return "El motivo del reporte no puede estar vacío.";
+        }
+        if (motivo.trim().length() > MAX_MOTIVO) {
+            return "El motivo no puede superar los " + MAX_MOTIVO + " caracteres.";
+        }
+        return null;
+    }
+
     private List<String> validar(Usuario usuario, String mensaje, boolean adjuntar, String imagenUrl,
                                  String tipo, String categoria, String archivoUrl,
                                  String tipoMaterial, String tipoArchivo, String tema) {
@@ -359,6 +419,8 @@ public class CursoServlet extends HttpServlet {
         boolean esAdmin = usuario.getRol() == TipoRol.Admin;
         request.setAttribute("puedePublicar", delAnioActual && (esAdmin || inscripto));
         request.setAttribute("cursoDelAnioActual", delAnioActual);
+        request.setAttribute("puedeReportar", inscripto);
+
 
         // Compañeros que cursan la materia, para acceder a sus perfiles públicos
         if (!esAdmin) {
