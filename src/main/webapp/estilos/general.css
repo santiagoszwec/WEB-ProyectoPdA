@@ -32,3 +32,107 @@ main {
 .nav-pills .nav-link.active {
     background-color: var(--color-marca);
 }
+
+/* ===== ★ NUEVO: sidebar ===== */
+.sidebar-ansaluni {
+    background-color: #eef6fc;              /* celeste bien clarito */
+    border-right: 1px solid #d3e4f1;
+}
+
+@media (min-width: 768px) {
+    .sidebar-ansaluni {
+        min-height: calc(100vh - 72px);     /* ocupa todo el alto al lado del contenido */
+    }
+}
+
+/* Diseño sutil: una grilla de puntitos casi invisible */
+.sidebar-contenido {
+    padding: 1.25rem .85rem 2rem;
+    background-image: radial-gradient(rgba(11, 31, 58, .07) 1px, transparent 1px);
+    background-size: 18px 18px;
+}
+
+.sidebar-titulo {
+    margin: 0 0 .9rem .5rem;
+    font-size: .9rem;
+    font-weight: 600;
+    color: #5f7f9f;
+}
+
+.nav-lateral .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    width: 100%;
+    padding: .55rem .75rem;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #2f4660;
+    font-weight: 500;
+    text-align: left;
+    transition: background-color .15s, color .15s;
+}
+
+.nav-lateral .nav-link > .bi:first-child {
+    font-size: 1.1rem;
+    color: #5f7f9f;
+}
+
+.nav-lateral .nav-link:hover {
+    background-color: #dcecf8;
+    color: var(--color-marca);
+}
+
+.nav-lateral .nav-link.active {
+    background-color: var(--color-marca);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(11, 31, 58, .18);
+}
+
+.nav-lateral .nav-link.active > .bi:first-child {
+    color: #fff;
+}
+
+
+.nav-lateral .grupo-activo {
+    background-color: #dcecf8;
+    color: var(--color-marca);
+}
+
+.flecha-menu {
+    margin-left: auto;
+    font-size: .75rem;
+    transition: transform .2s;
+}
+
+.nav-link-grupo[aria-expanded="true"] .flecha-menu {
+    transform: rotate(180deg);
+}
+
+.submenu-lateral {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: .2rem 0 .35rem 1.2rem;
+    padding-left: .6rem;
+    border-left: 2px solid #c5dbec;
+}
+
+.submenu-lateral .nav-link {
+    font-size: .92rem;
+    padding: .45rem .65rem;
+}
+
+.separador-lateral {
+    margin: .6rem .5rem;
+    border-color: #c5dbec;
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nav-lateral .nav-link,
+    .flecha-menu {
+        transition: none;
+    }
+}
