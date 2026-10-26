@@ -21,15 +21,15 @@
     <div class="container-fluid px-3 px-md-4 d-flex align-items-center gap-2">
 
         <c:if test="${not empty sessionScope.usuarioLogueado}">
-            <button class="btn btn-outline-light border-0 d-md-none px-2"
+             <button id="botonSidebar"
+                    hidden
+                    class="btn btn-outline-light border-0 px-2"
                     type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#menuLateral"
-                    aria-controls="menuLateral"
-                    aria-expanded="false"
-                    aria-label="Abrir menú">
+                    aria-controls="sidebarAnsaluni"
+                    aria-expanded="true"
+                    aria-label="Mostrar u ocultar el menú lateral">
                 <i class="bi bi-list fs-3"></i>
-            </button>
+             </button>
         </c:if>
 
         <a href="${pageContext.request.contextPath}/inicio"
