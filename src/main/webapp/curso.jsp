@@ -615,26 +615,19 @@
 
 <script>
     (function () {
-        var casilla = document.getElementById("adjuntarImagen");
-        var grupo = document.getElementById("grupoImagenUrl");
-        if (casilla && grupo) {
-            var actualizarImagen = function () {
-                grupo.style.display = casilla.checked ? "block" : "none";
+        // El tipo Material (solo administrador) pide datos extra y no categoría.
+        var tipo = document.getElementById("tipo");
+        var grupoMaterial = document.getElementById("grupoMaterial");
+        var grupoCategoria = document.getElementById("grupoCategoria");
+        if (tipo && grupoMaterial && grupoCategoria) {
+            var actualizarTipo = function () {
+                var esMaterial = tipo.value === "Material";
+                grupoMaterial.style.display = esMaterial ? "flex" : "none";
+                grupoCategoria.style.display = esMaterial ? "none" : "block";
             };
-            casilla.addEventListener("change", actualizarImagen);
-            actualizarImagen();
+            tipo.addEventListener("change", actualizarTipo);
+            actualizarTipo();
         }
-
-               var casilla = document.getElementById("adjuntarImagen");
-               var grupo = document.getElementById("grupoImagenUrl");
-               if (casilla && grupo) {
-                   var actualizarImagen = function () {
-                       grupo.style.display = casilla.checked ? "block" : "none";
-                   };
-                   casilla.addEventListener("change", actualizarImagen);
-                   actualizarImagen();
-               }
     })();
 </script>
-
 <jsp:include page="/layout/footer.jsp" />
