@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.example.webproyectopda.Utilidades.ConfiguracionCloudinary;
+import org.example.webproyectopda.Utilidades.ImagenCloudinary;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -107,8 +109,8 @@ public class CursoServlet extends HttpServlet {
             }
 
             String mensaje = request.getParameter("mensaje");
-            boolean adjuntar = request.getParameter("adjuntarImagen") != null;
-            String imagenUrl = request.getParameter("imagenUrl");
+            String imagenUrl = texto(request.getParameter("imagenUrl")).strip();
+            String imagenPublicId = texto(request.getParameter("imagenPublicId")).strip();
             String tipo = request.getParameter("tipo");
             String categoriaTexto = request.getParameter("categoria");
             String titulo = request.getParameter("titulo");
@@ -121,8 +123,14 @@ public class CursoServlet extends HttpServlet {
             String tipoArchivoTexto = request.getParameter("tipoArchivo");
             String tema = request.getParameter("tema");
 
-            List<String> errores = validar(usuario, mensaje, adjuntar, imagenUrl, tipo,
+            List<String> errores = validar(usuario, mensaje, tipo,
                     categoriaTexto, archivoUrl, tipoMaterialTexto, tipoArchivoTexto, tema);
+
+            try {
+                ImagenCloudinary.validar(imagenUrl, imagenPublicId);
+            } catch (IllegalArgumentException e) {
+                errores.add(e.getMessage());
+            }
 
             if (titulo == null || titulo.isBlank()) {
                 errores.add("El título no puede estar vacío.");
@@ -145,7 +153,7 @@ public class CursoServlet extends HttpServlet {
             if (!errores.isEmpty()) {
                 request.setAttribute("errores", errores);
                 request.setAttribute("valorMensaje", mensaje);
-                request.setAttribute("valorAdjuntar", adjuntar);
+                request.setAttribute("valorImagenPublicId", imagenPublicId);
                 request.setAttribute("valorImagenUrl", imagenUrl);
                 request.setAttribute("valorTipo", tipo);
                 request.setAttribute("valorCategoria", categoriaTexto);
@@ -181,7 +189,7 @@ public class CursoServlet extends HttpServlet {
 
                 request.setAttribute("errores", errores);
                 request.setAttribute("valorMensaje", mensaje);
-                request.setAttribute("valorAdjuntar", adjuntar);
+                request.setAttribute("valorImagenPublicId", imagenPublicId);
                 request.setAttribute("valorImagenUrl", imagenUrl);
                 request.setAttribute("valorTipo", tipo);
                 request.setAttribute("valorCategoria", categoriaTexto);
@@ -195,7 +203,7 @@ public class CursoServlet extends HttpServlet {
                 return;
             }
 
-            String urlFinal = adjuntar ? imagenUrl.trim() : null;
+            String urlFinal = imagenUrl.isEmpty() ? null : imagenUrl;
 
             Publicacion publicacion;
             boolean guardada;
@@ -310,7 +318,7 @@ public class CursoServlet extends HttpServlet {
         return null;
     }
 
-    private List<String> validar(Usuario usuario, String mensaje, boolean adjuntar, String imagenUrl,
+    private List<String> validar(Usuario usuario, String mensaje,
                                  String tipo, String categoria, String archivoUrl,
                                  String tipoMaterial, String tipoArchivo, String tema) {
         List<String> errores = new ArrayList<>();
@@ -321,15 +329,6 @@ public class CursoServlet extends HttpServlet {
         } else if (mensaje.trim().length() > MAX_MENSAJE) {
             errores.add("El mensaje no puede superar los " + MAX_MENSAJE + " caracteres.");
         }
-
-        if (adjuntar) {
-            if (imagenUrl == null || imagenUrl.isBlank()) {
-                errores.add("Ingresá la URL de la imagen o desmarcá la opción de adjuntar.");
-            } else if (!urlValida(imagenUrl.trim())) {
-                errores.add("La URL de la imagen debe comenzar con http:// o https:// y tener un formato correcto.");
-            }
-        }
-
         boolean esDuda = "Duda".equals(tipo);
         boolean esMensaje = "Mensaje".equals(tipo);
         boolean esMaterial = "Material".equals(tipo);
@@ -375,6 +374,9 @@ public class CursoServlet extends HttpServlet {
     private <E extends Enum<E>> boolean esEnumValido(Class<E> tipoEnum, String valor) {
         return Validaciones.enumValido(tipoEnum, valor);
     }
+    private String texto(String valor) {
+        return valor == null ? "" : valor;
+    }
 
     private boolean urlValida(String url) {
         return Validaciones.urlValida(url);
@@ -409,6 +411,9 @@ public class CursoServlet extends HttpServlet {
         request.setAttribute("curso", curso);
         request.setAttribute("publicaciones", PublicacionDAO.listarFeedPorCurso(curso.getId()));
         request.setAttribute("esAdmin", usuario.getRol() == TipoRol.Admin);
+        request.setAttribute("cloudName", ConfiguracionCloudinary.getCloudName());
+        request.setAttribute("uploadPreset", ConfiguracionCloudinary.getUploadPreset());
+        request.setAttribute("cloudinaryConfigurado", ConfiguracionCloudinary.isConfigurada());
 
         cargarMateriales(request, usuario, curso);
 
