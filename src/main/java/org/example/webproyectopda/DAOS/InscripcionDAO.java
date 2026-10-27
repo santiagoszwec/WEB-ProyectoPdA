@@ -101,6 +101,23 @@ public class InscripcionDAO {
             throw new RuntimeException(e);
         }
     }
+    public static Inscripcion buscarPorUsuarioYCurso(int usuarioId, int cursoId) {
+        String sql = "SELECT * FROM inscripcion WHERE usuario_id = ? AND curso_id = ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, usuarioId);
+            sentencia.setInt(2, cursoId);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                return filas.next() ? mapearInscripcion(filas) : null;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static List<Inscripcion> listarTodas() {
         String sql = "SELECT * FROM inscripcion ORDER BY id";

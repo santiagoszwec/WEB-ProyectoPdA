@@ -33,6 +33,13 @@
                  </c:if>
             </p>
 
+            <c:if test="${estadoCurso == 'Cursando'}">
+                <a href="${pageContext.request.contextPath}/progreso?curso=${curso.id}"
+                   class="btn btn-primary mb-4">
+                    Mi progreso
+                </a>
+            </c:if>
+
             <c:if test="${not empty mensajeExito}">
                             <div class="alert alert-success" role="alert">
                                 <c:out value="${mensajeExito}" />
