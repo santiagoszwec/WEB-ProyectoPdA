@@ -200,4 +200,14 @@ aside.sidebar-ansaluni.sidebar-mini {
     .flecha-menu {
         transition: none;
     }
+
+}
+.texto-error {
+    color: #dc3545;
+}
+
+.preview img {
+    max-width: 240px;
+    max-height: 240px;
+    border-radius: .5rem;
 }

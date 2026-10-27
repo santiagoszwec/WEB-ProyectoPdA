@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <jsp:include page="/layout/header.jsp" />
 
@@ -63,8 +64,14 @@
                                             </div>
                                         </c:if>
 
-                                        <form action="${pageContext.request.contextPath}/curso?id=${curso.id}"
-                                              method="post" novalidate>
+                                        <form id="formImagen"
+                                              action="${pageContext.request.contextPath}/curso?id=${curso.id}"
+                                              method="post" novalidate
+                                              data-cloud-name="<c:out value='${cloudName}' />"
+                                              data-upload-preset="<c:out value='${uploadPreset}' />"
+                                              data-configurado="${cloudinaryConfigurado}">
+                                            <input type="hidden" id="imagenUrl" name="imagenUrl" value="<c:out value='${valorImagenUrl}' />">
+                                            <input type="hidden" id="imagenPublicId" name="imagenPublicId" value="<c:out value='${valorImagenPublicId}' />">
 
                                             <div class="mb-3">
                                                 <label for="titulo" class="form-label">Título</label>
@@ -97,23 +104,22 @@
 
                                             </div>
 
-
                                             <div class="mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox"
-                                                           id="adjuntarImagen" name="adjuntarImagen"
-                                                           ${valorAdjuntar ? 'checked' : ''}>
-                                                    <label class="form-check-label" for="adjuntarImagen">
-                                                        Adjuntar una imagen
-                                                    </label>
+                                                <label for="archivoImagen" class="form-label">Imagen o PDF <span class="text-muted">(opcional)</span></label>
+                                                <input type="file" id="archivoImagen" class="form-control"
+                                                       accept="image/jpeg,image/png,application/pdf"
+                                                       ${cloudinaryConfigurado ? '' : 'disabled'}>
+                                                <small class="text-muted">JPG, PNG o PDF, hasta 10 MB. Se sube al publicar.</small>
+
+                                                <c:if test="${not cloudinaryConfigurado}">
+                                                    <p class="alert alert-info mt-2 mb-0">La subida de archivos aún no está configurada. Podés publicar sin adjunto.</p>
+                                                </c:if>
+
+                                                <div id="contenedorPreview" class="preview mt-2" hidden>
+                                                    <img id="previewImagen" alt="Vista previa del archivo">
+                                                    <button id="quitarImagen" type="button" class="btn btn-sm btn-outline-secondary ms-2">Quitar archivo</button>
                                                 </div>
-                                                <div id="grupoImagenUrl" class="mt-2">
-                                                    <label for="imagenUrl" class="form-label">URL de la imagen</label>
-                                                    <input type="text" id="imagenUrl" name="imagenUrl"
-                                                           class="form-control"
-                                                           placeholder="https://ejemplo.com/imagen.png"
-                                                           value="<c:out value='${valorImagenUrl}' />">
-                                                </div>
+                                                <p id="estadoImagen" class="small mt-2 mb-0" role="status" aria-live="polite"></p>
                                             </div>
 
                                             <div class="row g-3 mb-3">
@@ -175,8 +181,10 @@
                                                 </div>
                                             </div>
 
-                                            <button type="submit" class="btn btn-primary">Publicar en el curso</button>
+                                            <button type="submit" id="botonGuardar" class="btn btn-primary"
+                                                    data-texto="Publicar en el curso">Publicar en el curso</button>
                                         </form>
+                                        <script src="${pageContext.request.contextPath}/js/subida-imagen.js" defer></script>
                                     </div>
                                 </div>
                             </c:when>
@@ -370,12 +378,20 @@
                                      </p>
 
 
-                                    <c:if test="${not empty publicacion.imagenUrl}">
-                                        <img src="<c:out value='${publicacion.imagenUrl}' />"
-                                             alt="Imagen de la publicación"
-                                             class="img-fluid rounded mt-3"
-                                             style="max-height: 350px;">
-                                    </c:if>
+                                    <c:choose>
+                                        <c:when test="${fn:endsWith(fn:toLowerCase(publicacion.imagenUrl), '.pdf')}">
+                                            <div class="mt-3">
+                                                <a href="<c:out value='${publicacion.imagenUrl}' />" target="_blank" rel="noopener"
+                                                   class="btn btn-sm btn-outline-secondary">📄 Ver PDF</a>
+                                            </div>
+                                        </c:when>
+                                        <c:when test="${not empty publicacion.imagenUrl}">
+                                            <img src="<c:out value='${publicacion.imagenUrl}' />"
+                                                 alt="Imagen de la publicación"
+                                                 class="img-fluid rounded mt-3"
+                                                 style="max-height: 350px;">
+                                        </c:when>
+                                    </c:choose>
                                     <c:if test="${publicacion.tipo eq 'Duda'}">
                                         <div class="mt-3">
                                             <a href="${pageContext.request.contextPath}/duda?id=${publicacion.id}"
@@ -609,19 +625,15 @@
             actualizarImagen();
         }
 
-        // El tipo Material (solo administrador) pide datos extra y no categoría.
-        var tipo = document.getElementById("tipo");
-        var grupoMaterial = document.getElementById("grupoMaterial");
-        var grupoCategoria = document.getElementById("grupoCategoria");
-        if (tipo && grupoMaterial && grupoCategoria) {
-            var actualizarTipo = function () {
-                var esMaterial = tipo.value === "Material";
-                grupoMaterial.style.display = esMaterial ? "flex" : "none";
-                grupoCategoria.style.display = esMaterial ? "none" : "block";
-            };
-            tipo.addEventListener("change", actualizarTipo);
-            actualizarTipo();
-        }
+               var casilla = document.getElementById("adjuntarImagen");
+               var grupo = document.getElementById("grupoImagenUrl");
+               if (casilla && grupo) {
+                   var actualizarImagen = function () {
+                       grupo.style.display = casilla.checked ? "block" : "none";
+                   };
+                   casilla.addEventListener("change", actualizarImagen);
+                   actualizarImagen();
+               }
     })();
 </script>
 

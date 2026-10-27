@@ -176,7 +176,8 @@ public class Migracion {
 
     private static void actualizarTablasExistentes(Connection conn, Statement stmt) throws SQLException {
 
-        stmt.executeUpdate("ALTER TABLE comentario MODIFY COLUMN imagen_url VARCHAR(1000) NULL");
+        stmt.executeUpdate("ALTER TABLE publicacion MODIFY COLUMN imagen_url VARCHAR(1000) NULL");
+
 
         if (!existeColumna(conn, "comentario", "imagen_public_id")) {
             stmt.executeUpdate("ALTER TABLE comentario ADD COLUMN imagen_public_id VARCHAR(255) NULL AFTER imagen_url");
