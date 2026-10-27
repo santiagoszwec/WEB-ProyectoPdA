@@ -7,6 +7,7 @@ public enum TipoNotificacion {
     Duda,
     Baja,
     Suspension,
-    Material
+    Material,
+    Progreso
 
 }
