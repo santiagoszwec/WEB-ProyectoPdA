@@ -27,10 +27,11 @@ public class RegistroServlet extends HttpServlet {
         String nombre = request.getParameter("nombre");
         String password = request.getParameter("password");
         String anio = request.getParameter("anioDeGeneracion");
+        String repetirPassword = request.getParameter("repetirPassword");
 
         if (correo == null || correo.isBlank() || password == null || password.isBlank() ||
                 nombre == null || nombre.isBlank() || anio == null || anio.isBlank()) {
-            request.setAttribute("error", "Todos los campos son obligatorios.");
+            request.setAttribute("error", "Todos los campos son obligatorios");
             request.getRequestDispatcher("/registro.jsp").forward(request, response);
             return;
         }
@@ -38,7 +39,7 @@ public class RegistroServlet extends HttpServlet {
         try {
             anioDeGeneracion = Integer.parseInt(anio);
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "El año de generación debe ser un número.");
+            request.setAttribute("error", "El año de generación debe ser un número");
             request.getRequestDispatcher("/registro.jsp").forward(request, response);
             return;
         }
@@ -46,20 +47,25 @@ public class RegistroServlet extends HttpServlet {
             Usuario existe = UsuarioDAO.buscarPorCorreo(correo.trim());
 
             if (existe != null) {
-                request.setAttribute("error", "Ya existe un usuario con ese correo.");
+                request.setAttribute("error", "Ya existe un usuario con ese correo");
                 request.getRequestDispatcher("/registro.jsp").forward(request, response);
                 return;
             }
             if (anioDeGeneracion < 2008 || anioDeGeneracion > 2027) {
-                request.setAttribute("error", "Año inválido.");
+                request.setAttribute("error", "Año inválido");
+                request.getRequestDispatcher("/registro.jsp").forward(request, response);
+                return;
+            }
+
+            if (!password.equals(repetirPassword)) {
+                request.setAttribute("error", "Las contraseñas no coinciden");
                 request.getRequestDispatcher("/registro.jsp").forward(request, response);
                 return;
             }
 
             String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt(12));
 
-            Usuario usuario = new Usuario(nombre.trim(), correo.trim(), anioDeGeneracion,
-                    TipoRol.Estudiante, passwordHash);
+            Usuario usuario = new Usuario(nombre.trim(), correo.trim(), anioDeGeneracion, TipoRol.Estudiante, passwordHash);
 
             UsuarioDAO.crear(usuario);
 

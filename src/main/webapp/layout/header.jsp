@@ -10,51 +10,52 @@
 
     <title>ANSALUNI</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/estilos/general.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/estilos/general.css">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark navbar-ansaluni">
-    <div class="container-fluid px-4">
+<nav class="navbar navbar-dark navbar-ansaluni">
+    <div class="container-fluid px-3 px-md-4 d-flex align-items-center gap-2">
+
+        <c:if test="${not empty sessionScope.usuarioLogueado}">
+             <button id="botonSidebar"
+                    hidden
+                    class="btn btn-outline-light border-0 px-2"
+                    type="button"
+                    aria-controls="sidebarAnsaluni"
+                    aria-expanded="true"
+                    aria-label="Mostrar u ocultar el menú lateral">
+                <i class="bi bi-list fs-3"></i>
+             </button>
+        </c:if>
 
         <a href="${pageContext.request.contextPath}/inicio"
            class="navbar-brand fw-bold fs-3 mb-0 p-0">
             ANSALUNI
         </a>
 
-        <button class="navbar-toggler border-light"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent"
-                aria-expanded="false"
-                aria-label="Abrir menú">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <c:if test="${not empty sessionScope.usuarioLogueado}">
             <div class="ms-auto d-flex align-items-center gap-3">
-                <c:if test="${not empty sessionScope.usuarioLogueado}">
-                    <span class="navbar-text text-white">
-                        Usuario:
-                        <c:out value="${sessionScope.usuarioLogueado.nombre}" />
-                    </span>
+                <span class="navbar-text text-white d-none d-sm-inline">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <c:out value="${sessionScope.usuarioLogueado.nombre}" />
+                </span>
 
-                    <button type="button"
-                            class="btn btn-link nav-link text-white p-0"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalCerrarSesion">
-                        Cerrar sesión
-                    </button>
-                </c:if>
+                <button type="button"
+                        class="btn btn-sm btn-outline-light"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalCerrarSesion"
+                        aria-label="Cerrar sesión">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="d-none d-sm-inline ms-1">Cerrar sesión</span>
+                </button>
             </div>
-        </div>
+        </c:if>
     </div>
 </nav>
-
 <c:if test="${not empty sessionScope.usuarioLogueado}">
     <div class="modal fade" id="modalCerrarSesion" tabindex="-1"
          aria-labelledby="tituloCerrarSesion" aria-hidden="true">

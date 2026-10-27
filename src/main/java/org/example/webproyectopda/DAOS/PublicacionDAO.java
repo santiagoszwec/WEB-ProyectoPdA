@@ -206,6 +206,22 @@ public class PublicacionDAO {
         }
     }
 
+    public static boolean desactivarPropia(int publicacionId, int usuarioId) {
+        String sql = "UPDATE publicacion SET activa = FALSE WHERE id = ? AND usuario_id = ? AND activa = TRUE";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, publicacionId);
+            sentencia.setInt(2, usuarioId);
+
+            return sentencia.executeUpdate() == 1;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public static boolean darDeBaja(int id, String motivo) {
         Connection conexion = null;
@@ -788,5 +804,6 @@ public class PublicacionDAO {
         publicacion.setActiva(filas.getBoolean("activa"));
         return publicacion;
     }
+
 }
 
