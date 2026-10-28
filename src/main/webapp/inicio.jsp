@@ -34,91 +34,13 @@
                 </c:when>
 
                 <c:otherwise>
-                    <div class="d-flex flex-column gap-3">
+                    <div>
                         <c:forEach var="publicacion" items="${publicaciones}">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-
-
-                                    <div class="mb-2">
-                                        <h5 class="mb-2">
-                                            <c:out value="${publicacion.nombreCurso}" />
-                                        </h5>
-
-                                        <div class="d-flex flex-wrap gap-2">
-                                <span class="badge text-bg-dark">
-                                    <c:out value="${publicacion.tipo}" />
-                                </span>
-
-                                            <c:if test="${not empty publicacion.categoria}">
-                                    <span class="badge text-bg-info">
-                                        <c:out value="${publicacion.categoria eq 'Reunion' ? 'Reunión' : publicacion.categoria}" />
-                                    </span>
-                                            </c:if>
-
-                                            <c:if test="${publicacion.tipo eq 'Duda'}">
-                                    <span class="badge ${publicacion.estado eq 'Abierta' ? 'text-bg-warning' : 'text-bg-success'}">
-                                        <c:out value="${publicacion.estado}" />
-                                    </span>
-                                            </c:if>
-                                        </div>
-                                    </div>
-
-                                    <h3 class="h5 mb-2">
-                                        <c:out value="${publicacion.titulo}" />
-                                    </h3>
-
-                                    <p class="mb-3">
-                                        <c:out value="${publicacion.mensaje}" />
-                                    </p>
-
-                                    <c:if test="${not empty publicacion.fechaLimite}">
-                                        <p class="text-muted small mb-2">
-                                            <strong>Fecha límite:</strong>
-                                            <c:out value="${publicacion.fechaLimite}" />
-                                        </p>
-                                    </c:if>
-
-                                    <p class="text-muted small mb-0">
-                                        Por
-                                        <c:out value="${empty publicacion.autor ? 'Usuario eliminado' : publicacion.autor}" />
-                                        · Fecha:
-                                        <c:out value="${publicacion.fechaPublicacion}" />
-                                    </p>
-
-                                    <c:choose>
-                                        <c:when test="${fn:endsWith(fn:toLowerCase(publicacion.imagenUrl), '.pdf')}">
-                                            <div class="mt-3">
-                                                <a href="<c:out value='${publicacion.imagenUrl}' />" target="_blank" rel="noopener"
-                                                   class="btn btn-sm btn-outline-secondary">📄 Ver PDF</a>
-                                            </div>
-                                        </c:when>
-                                        <c:when test="${not empty publicacion.imagenUrl}">
-                                            <img src="<c:out value='${publicacion.imagenUrl}' />"
-                                                 alt="Imagen de la publicación"
-                                                 class="img-fluid rounded mt-3"
-                                                 style="max-height: 350px;">
-                                        </c:when>
-                                    </c:choose>
-
-                                    <div class="mt-3">
-                                        <a href="${pageContext.request.contextPath}/curso?id=${publicacion.cursoId}"
-                                           class="btn btn-sm btn-outline-primary">
-                                            Ver curso
-                                        </a>
-
-                                        <c:if test="${publicacion.tipo eq 'Duda'}">
-                                            <a href="${pageContext.request.contextPath}/duda?id=${publicacion.id}"
-                                               class="btn btn-sm btn-outline-secondary">
-                                                    ${publicacion.estado eq 'Abierta' ? 'Ver duda y responder' : 'Ver duda'}
-                                            </a>
-                                        </c:if>
-                                    </div>
-
-                                </div>
-                            </div>
+                            <c:set var="pub" value="${publicacion}" scope="request"/>
+                            <jsp:include page="/layout/publicacion.jsp"/>
                         </c:forEach>
                     </div>
+                    <%-- ★ FIN NUEVO --%>
                 </c:otherwise>
             </c:choose>
         </div>

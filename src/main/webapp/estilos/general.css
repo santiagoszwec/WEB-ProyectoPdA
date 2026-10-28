@@ -400,3 +400,14 @@ aside.sidebar-ansaluni.sidebar-mini {
 @media (prefers-reduced-motion: reduce) {
     .btn-cabecera { transition: none; }
 }
+
+.pub-reddit {
+    --bs-card-bg: #f9fcfe;
+    --bs-card-border-color: #e1edf7;
+    --bs-card-border-radius: 16px;
+    transition: background-color .15s, border-color .15s;
+}
+.pub-reddit:hover {
+    --bs-card-bg: #f1f8fd;
+    --bs-card-border-color: #cfe2f1;
+}
