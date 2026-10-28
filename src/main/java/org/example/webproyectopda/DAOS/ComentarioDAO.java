@@ -321,4 +321,20 @@ public class ComentarioDAO {
         comentario.setImagenPublicId(fila.getString("imagen_public_id"));
         return comentario;
     }
+
+    public static boolean desactivarPropio(int comentarioId, int usuarioId) {
+        String sql = "UPDATE comentario SET activa = FALSE WHERE id = ? AND usuario_id = ? AND activa = TRUE";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, comentarioId);
+            sentencia.setInt(2, usuarioId);
+
+            return sentencia.executeUpdate() == 1;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

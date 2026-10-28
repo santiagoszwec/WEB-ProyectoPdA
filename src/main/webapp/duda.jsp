@@ -45,7 +45,7 @@
                             </span>
                         </div>
 
-                        <p class="mb-2"><c:out value="${duda.mensaje}" /></p>
+                        <p class="mb-1"><c:out value="${duda.mensaje}" /></p>
 
                         <c:if test="${not empty duda.imagenUrl}">
                             <img src="<c:out value='${duda.imagenUrl}' />" alt="Imagen de la duda"
@@ -89,20 +89,37 @@
                                                            </c:otherwise>
                                                        </c:choose>
 
-                                                        <div class="mt-2 d-flex flex-wrap gap-2">
-                                                            <a href="${pageContext.request.contextPath}/duda?id=${duda.id}&comentar=${respuesta.id}#formImagen"
-                                                               class="btn btn-sm btn-outline-secondary">Comentar</a>
+                            <div class="mt-2 d-flex align-items-center gap-2">
+                                <a href="${pageContext.request.contextPath}/duda?id=${duda.id}&comentar=${respuesta.id}#formImagen"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    Comentar
+                                </a>
 
-                                                            <c:if test="${puedeMarcarUtil}">
-                                                                <form method="post" action="${pageContext.request.contextPath}/duda" class="d-inline"
-                                                                      onsubmit="return confirm('¿Marcar esta respuesta como la más útil? La duda quedará resuelta.');">
-                                                                    <input type="hidden" name="accion" value="marcarUtil">
-                                                                    <input type="hidden" name="id" value="${duda.id}">
-                                                                    <input type="hidden" name="respuesta" value="${respuesta.id}">
-                                                                    <button type="submit" class="btn btn-sm btn-outline-success">Marcar como más útil</button>
-                                                                </form>
-                                                            </c:if>
-                                                        </div>
+                                <c:if test="${puedeMarcarUtil}">
+                                    <form method="post"
+                                          action="${pageContext.request.contextPath}/duda"
+                                          class="d-inline"
+                                          onsubmit="return confirm('¿Marcar esta respuesta como la más útil? La duda quedará resuelta.');">
+                                        <input type="hidden" name="accion" value="marcarUtil">
+                                        <input type="hidden" name="id" value="${duda.id}">
+                                        <input type="hidden" name="respuesta" value="${respuesta.id}">
+
+                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                            Marcar como más útil
+                                        </button>
+                                    </form>
+                                </c:if>
+
+                                <c:if test="${respuesta.usuarioId == sessionScope.usuarioLogueado.id}">
+                                    <button type="button"
+                                            class="btn p-0 border-0 bg-transparent text-danger fs-5 ms-auto"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEliminarRespuesta${respuesta.id}"
+                                            title="Eliminar respuesta">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </c:if>
+                            </div>
 
                             <c:if test="${not empty respuesta.comentarios}">
                                 <div class="mt-3 ms-4 ps-3 border-start">
@@ -112,23 +129,119 @@
                                                 <strong><c:out value="${comentario.autorNombre}" /></strong>
                                                 <span class="text-muted"> · <c:out value="${comentario.fechaPublicacion}" /></span>
                                             </div>
-                                            <p class="mb-1"><c:out value="${comentario.mensaje}" /></p>
-                                                                                       <c:choose>
-                                                                                           <c:when test="${fn:endsWith(fn:toLowerCase(comentario.imagenUrl), '.pdf')}">
-                                                                                               <a href="<c:out value='${comentario.imagenUrl}' />" target="_blank" rel="noopener"
-                                                                                                  class="btn btn-sm btn-outline-secondary">📄 Ver PDF</a>
-                                                                                           </c:when>
-                                                                                           <c:when test="${not empty comentario.imagenUrl}">
-                                                                                               <img src="<c:out value='${comentario.imagenUrl}' />" alt="Imagen adjunta"
-                                                                                                    class="img-fluid rounded" style="max-height: 200px;" loading="lazy">
-                                                                                           </c:when>
-                                                                                       </c:choose>
+                                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                                <p class="mb-1"><c:out value="${comentario.mensaje}" /></p>
+
+                                                <c:if test="${comentario.usuarioId == sessionScope.usuarioLogueado.id}">
+                                                    <button type="button"
+                                                            class="btn p-0 border-0 bg-transparent text-danger fs-5"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalEliminarComentario${comentario.id}"
+                                                            title="Eliminar comentario">
+                                                        <i class="bi bi-trash3"></i>
+                                                    </button>
+                                                </c:if>
+                                            </div>
+                                           <c:choose>
+                                               <c:when test="${fn:endsWith(fn:toLowerCase(comentario.imagenUrl), '.pdf')}">
+                                                   <a href="<c:out value='${comentario.imagenUrl}' />" target="_blank" rel="noopener"
+                                                      class="btn btn-sm btn-outline-secondary">📄 Ver PDF</a>
+                                               </c:when>
+                                               <c:when test="${not empty comentario.imagenUrl}">
+                                                   <img src="<c:out value='${comentario.imagenUrl}' />" alt="Imagen adjunta"
+                                                        class="img-fluid rounded" style="max-height: 200px;" loading="lazy">
+                                               </c:when>
+                                           </c:choose>
                                         </div>
+                                        <c:if test="${comentario.usuarioId == sessionScope.usuarioLogueado.id}">
+                                            <div class="modal fade"
+                                                 id="modalEliminarComentario${comentario.id}"
+                                                 tabindex="-1"
+                                                 aria-labelledby="tituloEliminarComentario${comentario.id}"
+                                                 aria-hidden="true">
+
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content border-0 shadow">
+                                                        <div class="modal-header border-0">
+                                                            <h5 class="modal-title"
+                                                                id="tituloEliminarComentario${comentario.id}">
+                                                                ¿Eliminar comentario?
+                                                            </h5>
+                                                            <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"
+                                                                    aria-label="Cerrar"></button>
+                                                        </div>
+
+                                                        <div class="modal-body">
+                                                            ¿Seguro que querés eliminar este comentario?
+                                                        </div>
+
+                                                        <div class="modal-footer border-0">
+                                                            <button type="button" class="btn btn-light border"
+                                                                    data-bs-dismiss="modal">
+                                                                Cancelar
+                                                            </button>
+
+                                                            <form action="${pageContext.request.contextPath}/comentario/desactivar"
+                                                                  method="post" class="m-0">
+                                                                <input type="hidden" name="comentarioId"
+                                                                       value="${comentario.id}">
+                                                                <input type="hidden" name="dudaId"
+                                                                       value="${duda.id}">
+
+                                                                <button type="submit" class="btn btn-danger">
+                                                                    <i class="bi bi-trash3 me-1"></i>
+                                                                    Sí, eliminar
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </c:if>
                                     </c:forEach>
                                 </div>
                             </c:if>
                         </div>
                     </div>
+                    <c:if test="${respuesta.usuarioId == sessionScope.usuarioLogueado.id}">
+                        <div class="modal fade"
+                             id="modalEliminarRespuesta${respuesta.id}"
+                             tabindex="-1"
+                             aria-labelledby="tituloEliminarRespuesta${respuesta.id}"
+                             aria-hidden="true">
+
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header border-0">
+                                        <h5 class="modal-title" id="tituloEliminarRespuesta${respuesta.id}">
+                                            ¿Eliminar respuesta?
+                                        </h5>
+                                        <button type="button" class="btn-close"
+                                                data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        ¿Seguro que querés eliminar esta respuesta?
+                                    </div>
+
+                                    <div class="modal-footer border-0">
+                                        <button type="button" class="btn btn-light border"
+                                                data-bs-dismiss="modal">Cancelar</button>
+
+                                        <form action="${pageContext.request.contextPath}/comentario/desactivar"
+                                              method="post" class="m-0">
+                                            <input type="hidden" name="comentarioId" value="${respuesta.id}">
+                                            <input type="hidden" name="dudaId" value="${duda.id}">
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-trash3 me-1"></i> Sí, eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
                 </c:forEach>
 
                 <c:choose>
