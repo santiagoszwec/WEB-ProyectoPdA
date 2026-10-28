@@ -1,6 +1,7 @@
 
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <c:set var="ocultarMenu" value="false" scope="request"/>
 
@@ -85,12 +86,20 @@
                                         <c:out value="${publicacion.fechaPublicacion}" />
                                     </p>
 
-                                    <c:if test="${not empty publicacion.imagenUrl}">
-                                        <img src="<c:out value='${publicacion.imagenUrl}' />"
-                                             alt="Imagen de la publicación"
-                                             class="img-fluid rounded mt-3"
-                                             style="max-height: 350px;">
-                                    </c:if>
+                                    <c:choose>
+                                        <c:when test="${fn:endsWith(fn:toLowerCase(publicacion.imagenUrl), '.pdf')}">
+                                            <div class="mt-3">
+                                                <a href="<c:out value='${publicacion.imagenUrl}' />" target="_blank" rel="noopener"
+                                                   class="btn btn-sm btn-outline-secondary">📄 Ver PDF</a>
+                                            </div>
+                                        </c:when>
+                                        <c:when test="${not empty publicacion.imagenUrl}">
+                                            <img src="<c:out value='${publicacion.imagenUrl}' />"
+                                                 alt="Imagen de la publicación"
+                                                 class="img-fluid rounded mt-3"
+                                                 style="max-height: 350px;">
+                                        </c:when>
+                                    </c:choose>
 
                                     <div class="mt-3">
                                         <a href="${pageContext.request.contextPath}/curso?id=${publicacion.cursoId}"

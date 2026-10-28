@@ -55,6 +55,17 @@ public class Migracion {
                             "  FOREIGN KEY (inscripcion_id) REFERENCES inscripcion(id) ON DELETE CASCADE" +
                             ")",
 
+
+                    "CREATE TABLE IF NOT EXISTS tarea (" +
+                            "  id INT AUTO_INCREMENT PRIMARY KEY," +
+                            "  titulo VARCHAR(150) NOT NULL," +
+                            "  fecha_limite DATE NULL," +
+                            "  completada BOOLEAN NOT NULL DEFAULT FALSE," +
+                            "  fecha_completada DATE NULL," +
+                            "  inscripcion_id INT NOT NULL," +
+                            "  FOREIGN KEY (inscripcion_id) REFERENCES inscripcion(id) ON DELETE CASCADE" +
+                            ")",
+
                     "CREATE TABLE IF NOT EXISTS publicacion (" +
                             "  id INT AUTO_INCREMENT PRIMARY KEY," +
                             "  mensaje TEXT NOT NULL," +
@@ -141,13 +152,6 @@ public class Migracion {
                             "  FOREIGN KEY (comentario_id) REFERENCES comentario(id) ON DELETE CASCADE" +
                             ")"
             };
-            if (!existeColumna(conn, "publicacion", "titulo")) {
-                stmt.executeUpdate("ALTER TABLE publicacion ADD COLUMN titulo VARCHAR(150) NOT NULL DEFAULT '' AFTER mensaje");
-            }
-
-            if (!existeColumna(conn, "publicacion", "fecha_limite")) {
-                stmt.executeUpdate("ALTER TABLE publicacion ADD COLUMN fecha_limite DATE NULL AFTER fecha_publicacion");
-            }
 
 
             for (String sql : tablas) {
@@ -173,10 +177,22 @@ public class Migracion {
     private static void actualizarTablasExistentes(Connection conn, Statement stmt) throws SQLException {
 
         stmt.executeUpdate("ALTER TABLE comentario MODIFY COLUMN imagen_url VARCHAR(1000) NULL");
+        stmt.executeUpdate("ALTER TABLE publicacion MODIFY COLUMN imagen_url VARCHAR(1000) NULL");
+
 
         if (!existeColumna(conn, "comentario", "imagen_public_id")) {
             stmt.executeUpdate("ALTER TABLE comentario ADD COLUMN imagen_public_id VARCHAR(255) NULL AFTER imagen_url");
             System.out.println("Columna agregada: comentario.imagen_public_id");
+        }
+
+        if (!existeColumna(conn, "publicacion", "titulo")) {
+            stmt.executeUpdate("ALTER TABLE publicacion ADD COLUMN titulo VARCHAR(150) NOT NULL DEFAULT '' AFTER mensaje");
+            System.out.println("Columna agregada: publicacion.titulo");
+        }
+
+        if (!existeColumna(conn, "publicacion", "fecha_limite")) {
+            stmt.executeUpdate("ALTER TABLE publicacion ADD COLUMN fecha_limite DATE NULL AFTER fecha_publicacion");
+            System.out.println("Columna agregada: publicacion.fecha_limite");
         }
     }
 
