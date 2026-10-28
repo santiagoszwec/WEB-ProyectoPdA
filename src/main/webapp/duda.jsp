@@ -29,7 +29,8 @@
                 <a href="${pageContext.request.contextPath}/curso?id=${duda.cursoId}"
                    class="btn btn-link px-0 mb-3">← Volver al curso</a>
 
-                <div class="card shadow-sm mb-4">
+                <%-- ★ NUEVO: antes decía "card shadow-sm mb-4" --%>
+                <div class="card pub-reddit mb-4">
                     <div class="card-body">
                         <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                             <strong>
@@ -60,8 +61,9 @@
                 </c:if>
 
                 <c:forEach var="respuesta" items="${respuestas}">
+                    <%-- ★ NUEVO: se agregó "pub-reddit" a la clase (los bordes verde/azul siguen funcionando) --%>
                     <div id="respuesta-${respuesta.id}"
-                         class="card mb-3 ${respuesta.destacado ? 'border-success' : ''} ${respuestaAComentar.id == respuesta.id ? 'border-primary border-2' : ''}">
+                         class="card pub-reddit mb-3 ${respuesta.destacado ? 'border-success' : ''} ${respuestaAComentar.id == respuesta.id ? 'border-primary border-2' : ''}">
                         <div class="card-body">
                             <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                                 <strong><c:out value="${respuesta.autorNombre}" /></strong>

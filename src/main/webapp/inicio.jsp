@@ -13,12 +13,13 @@
 
         <div class="col-md-9 col-lg-10 p-4">
 
-            <div class="p-4 mb-4 bg-light rounded-3">
-                <h1>Inicio</h1>
-                <p class="mb-0">
-                    Últimas publicaciones de tus cursos
-                </p>
-            </div>
+           <c:set var="saludoNombre" value="${fn:split(sessionScope.usuarioLogueado.nombre, ' ')[0]}"/>
+           <div class="p-4 mb-4 bg-light rounded-3">
+               <h1>Hola, <c:out value="${saludoNombre}"/>!</h1>
+               <p class="mb-0">
+                   Estas son las últimas publicaciones de tus cursos
+               </p>
+           </div>
 
             <c:if test="${not empty error}">
                 <div class="alert alert-danger" role="alert">

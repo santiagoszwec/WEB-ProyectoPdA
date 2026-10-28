@@ -282,7 +282,8 @@
                     <div class="row g-3 mb-4">
                         <c:forEach var="material" items="${materiales}">
                             <div class="col-md-6 col-xl-4 d-flex">
-                                <div class="card shadow-sm w-100">
+                                <%-- ★ NUEVO: antes decía "card shadow-sm w-100" --%>
+                                <div class="card pub-reddit w-100">
                                     <div class="card-body">
                                         <div class="d-flex flex-wrap gap-2 mb-2">
                                             <span class="badge text-bg-dark">
@@ -336,164 +337,17 @@
                 </c:when>
 
                 <c:otherwise>
-                    <div class="d-flex flex-column gap-3">
-                                               <c:forEach var="publicacion" items="${publicaciones}">
-                                                   <div class="card shadow-sm" id="publicacion-${publicacion.id}">
-                                <div class="card-body">
-
-                                    <div class="d-flex flex-wrap gap-2 mb-2">
-                                        <span class="badge text-bg-dark">
-                                            <c:out value="${publicacion.tipo}" />
-                                        </span>
-                                        <c:if test="${not empty publicacion.categoria}">
-                                            <span class="badge text-bg-info">
-                                                <c:out value="${publicacion.categoria eq 'Reunion' ? 'Reunión' : publicacion.categoria}" />
-                                            </span>
-                                        </c:if>
-                                        <c:if test="${publicacion.tipo eq 'Duda'}">
-                                            <span class="badge ${publicacion.estado eq 'Abierta' ? 'text-bg-warning' : 'text-bg-success'}">
-                                                <c:out value="${publicacion.estado}" />
-                                            </span>
-                                        </c:if>
-                                    </div>
-
-                                    <h3 class="h5 mb-2">
-                                        <c:out value="${publicacion.titulo}" />
-                                    </h3>
-
-                                    <p class="mb-3">
-                                        <c:out value="${publicacion.mensaje}" />
-                                    </p>
-
-                                    <c:if test="${not empty publicacion.fechaLimite}">
-                                        <p class="text-muted small mb-2">
-                                            <strong>Fecha límite:</strong>
-                                            <c:out value="${publicacion.fechaLimite}" />
-                                        </p>
-                                    </c:if>
-
-                                     <p class="text-muted small mb-0">
-                                        Por <c:out value="${empty publicacion.autor ? 'Usuario eliminado' : publicacion.autor}" />
-                                        · Fecha: <c:out value="${publicacion.fechaPublicacion}" />
-                                     </p>
-
-
-                                    <c:choose>
-                                        <c:when test="${fn:endsWith(fn:toLowerCase(publicacion.imagenUrl), '.pdf')}">
-                                            <div class="mt-3">
-                                                <a href="<c:out value='${publicacion.imagenUrl}' />" target="_blank" rel="noopener"
-                                                   class="btn btn-sm btn-outline-secondary">📄 Ver PDF</a>
-                                            </div>
-                                        </c:when>
-                                        <c:when test="${not empty publicacion.imagenUrl}">
-                                            <img src="<c:out value='${publicacion.imagenUrl}' />"
-                                                 alt="Imagen de la publicación"
-                                                 class="img-fluid rounded mt-3"
-                                                 style="max-height: 350px;">
-                                        </c:when>
-                                    </c:choose>
-                                    <c:if test="${publicacion.tipo eq 'Duda'}">
-                                        <div class="mt-3">
-                                            <a href="${pageContext.request.contextPath}/duda?id=${publicacion.id}"
-                                               class="btn btn-sm btn-outline-primary">
-                                                ${publicacion.estado eq 'Abierta' ? 'Ver duda y responder' : 'Ver duda'}
-                                            </a>
-                                        </div>
-                                    </c:if>
-                                    <c:if test="${puedeReportar}">
-                                        <div class="mt-3">
-                                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalReportar"
-                                                    data-publicacion-id="${publicacion.id}"
-                                                    data-autor="<c:out value='${publicacion.autor}' />"
-                                                    data-mensaje="<c:out value='${publicacion.mensaje}' />">
-                                                <i class="bi bi-flag me-1"></i>Reportar
-                                            </button>
-                                        </div>
-                                    </c:if>
-                                    <c:if test="${publicacion.usuarioId == sessionScope.usuarioLogueado.id}">
-                                        <div class="mt-3 d-flex justify-content-end gap-3">
-                                            <a href="${pageContext.request.contextPath}/publicacion/editar?id=${publicacion.id}"
-                                               class="text-secondary fs-5"
-                                               title="Editar publicación"
-                                               aria-label="Editar publicación">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
-
-                                            <button type="button"
-                                                    class="btn p-0 border-0 bg-transparent text-danger fs-5"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalDesactivar${publicacion.id}"
-                                                    title="Eliminar publicación"
-                                                    aria-label="Eliminar publicación">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-                                        </div>
-                                        <div class="modal fade"
-                                             id="modalDesactivar${publicacion.id}"
-                                             tabindex="-1"
-                                             aria-labelledby="tituloDesactivar${publicacion.id}"
-                                             aria-hidden="true">
-
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content border-0 shadow">
-
-                                                    <div class="modal-header border-0 pb-0">
-                                                        <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center"
-                                                             style="width: 48px; height: 48px;">
-                                                            <i class="bi bi-exclamation-triangle fs-4"></i>
-                                                        </div>
-
-                                                        <button type="button"
-                                                                class="btn-close ms-auto"
-                                                                data-bs-dismiss="modal"
-                                                                aria-label="Cerrar"></button>
-                                                    </div>
-
-                                                    <div class="modal-body pt-3">
-                                                        <h5 class="modal-title fw-semibold mb-2"
-                                                            id="tituloDesactivar${publicacion.id}">
-                                                            ¿Eliminar esta publicación?
-                                                        </h5>
-
-                                                        <p class="text-muted mb-2">
-                                                            Vas a eliminar la publicación
-                                                            <strong><c:out value="${publicacion.titulo}" /></strong>.
-                                                        </p>
-
-                                                    </div>
-
-                                                    <div class="modal-footer border-0 pt-0">
-                                                        <button type="button"
-                                                                class="btn btn-light border"
-                                                                data-bs-dismiss="modal">
-                                                            Cancelar
-                                                        </button>
-
-                                                        <form action="${pageContext.request.contextPath}/publicacion/desactivar"
-                                                              method="post" class="m-0">
-
-                                                            <input type="hidden" name="publicacionId"
-                                                                   value="${publicacion.id}">
-
-                                                            <input type="hidden" name="cursoId"
-                                                                   value="${curso.id}">
-
-                                                            <button type="submit" class="btn btn-danger">
-                                                                <i class="bi bi-trash3 me-1"></i> Sí, eliminar
-                                                            </button>
-                                                        </form>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </c:if>
-                                </div>
-                            </div>
+                    <%-- ★ NUEVO: reemplaza todo el bloque de cards de publicaciones (con sus modales de eliminar).
+                         Dentro del curso se muestra el autor y se habilitan Reportar / Editar / Eliminar. --%>
+                    <c:set var="pubOcultarCurso" value="true" scope="request"/>
+                    <c:set var="pubGestion" value="true" scope="request"/>
+                    <div>
+                        <c:forEach var="publicacion" items="${publicaciones}">
+                            <c:set var="pub" value="${publicacion}" scope="request"/>
+                            <jsp:include page="/layout/publicacion.jsp"/>
                         </c:forEach>
                     </div>
+                    <%-- ★ FIN NUEVO --%>
                 </c:otherwise>
             </c:choose>
 

@@ -65,42 +65,13 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <div class="d-flex flex-column gap-3">
-                        <c:forEach var="duda" items="${resultados}">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-
-                                    <div class="d-flex flex-wrap gap-2 mb-2">
-                                        <span class="badge text-bg-primary">
-                                            <c:out value="${duda.curso}" />
-                                        </span>
-                                        <span class="badge text-bg-info">
-                                            <c:out value="${duda.categoria}" />
-                                        </span>
-                                        <span class="badge ${duda.estado eq 'Abierta' ? 'text-bg-warning' : 'text-bg-success'}">
-                                            <c:out value="${duda.estado}" />
-                                        </span>
-                                    </div>
-
-                                    <p class="mb-3">
-                                        <c:out value="${duda.mensaje}" />
-                                    </p>
-
-                                    <p class="text-muted small mb-0">
-                                        Por <c:out value="${empty duda.autor ? 'Usuario eliminado' : duda.autor}" />
-                                        · Fecha: <c:out value="${duda.fechaPublicacion}" />
-                                    </p>
-
-                                    <div class="mt-3">
-                                        <a href="${pageContext.request.contextPath}/duda?id=${duda.id}"
-                                           class="btn btn-sm btn-outline-primary">
-                                            ${duda.estado eq 'Abierta' ? 'Ver duda y responder' : 'Ver duda'}
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </div>
+                   <div>
+                       <c:forEach var="duda" items="${resultados}">
+                           <c:set var="pub" value="${duda}" scope="request"/>
+                           <jsp:include page="/layout/publicacion.jsp"/>
+                       </c:forEach>
+                   </div>
+                   <%-- ★ FIN NUEVO --%>
                 </c:otherwise>
             </c:choose>
         </div>
