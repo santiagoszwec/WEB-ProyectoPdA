@@ -211,3 +211,192 @@ aside.sidebar-ansaluni.sidebar-mini {
     max-height: 240px;
     border-radius: .5rem;
 }
+
+.btn-cabecera {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #fff;
+    transition: background-color .15s;
+}
+
+.btn-cabecera:hover,
+.btn-cabecera.show {
+    background: rgba(255, 255, 255, .14);
+    color: #fff;
+}
+
+.btn-cabecera:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Círculo del perfil: un poco más claro que el header, letras blancas */
+.avatar-cabecera {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #3d5287;
+    color: #fff;
+    font-weight: 700;
+    font-size: .875rem;
+    letter-spacing: .02em;
+    overflow: hidden;
+}
+
+.btn-cabecera.show .avatar-cabecera {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .35);
+}
+
+.avatar-grande {
+    width: 48px;
+    height: 48px;
+    font-size: 1.05rem;
+    flex: 0 0 auto;
+}
+
+/* Contador sobre la campanita */
+.contador-notif {
+    position: absolute;
+    top: 3px;
+    right: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border: 2px solid var(--color-marca);
+    border-radius: 999px;
+    background: #e0533d;
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Desplegables */
+.menu-cabecera {
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #dbe3ec;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(27, 39, 69, .22);
+}
+
+.menu-notificaciones { width: 380px; max-width: calc(100vw - 24px); }
+.menu-usuario        { width: 300px; max-width: calc(100vw - 24px); }
+
+.menu-cabecera-titulo {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .8rem 1rem;
+    border-bottom: 1px solid #e5ebf2;
+}
+
+.notif-lista {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    padding: .7rem 1rem;
+    border-bottom: 1px solid #eef2f7;
+    color: #1f2a44;
+    font-size: .9rem;
+    line-height: 1.4;
+    text-decoration: none;
+    white-space: normal;
+}
+
+.notif-item:hover {
+    background: #eef2f7;
+    color: #1f2a44;
+}
+
+.notif-meta {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .75rem;
+    color: #5b6b82;
+}
+
+.notif-vacia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .4rem;
+    padding: 1.6rem 1rem;
+    color: #5b6b82;
+    font-size: .9rem;
+}
+
+.notif-pie {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    font-weight: 700;
+    font-size: .9rem;
+    color: #07756e;
+    text-decoration: none;
+}
+
+.notif-pie:hover {
+    background: #eef2f7;
+    color: #054e49;
+}
+
+.usuario-datos {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: 1rem;
+}
+
+.usuario-texto {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.menu-cabecera-opciones {
+    padding: .4rem;
+    border-top: 1px solid #e5ebf2;
+}
+
+.menu-cabecera-opciones .dropdown-item {
+    min-height: 44px;
+    border-radius: 8px;
+}
+
+
+@media (max-width: 575.98px) {
+    .menu-cabecera {
+        position: fixed !important;
+        top: 62px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        max-width: none !important;
+        transform: none !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-cabecera { transition: none; }
+}
