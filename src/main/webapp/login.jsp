@@ -19,11 +19,19 @@
                     </div>
                 </c:if>
 
+                 <c:if test="${param.recuperada == 'ok'}">
+                    <div class="alert alert-success" role="alert">
+                        Contraseña actualizada. Ya podés iniciar sesión con la nueva.
+                    </div>
+                 </c:if>
+
                 <c:if test="${not empty error}">
                     <div class="alert alert-danger" role="alert">
                         <c:out value="${error}"/>
                     </div>
                 </c:if>
+
+                <%-- ★ CAMBIO 1: se borró la alerta amarilla "¿Olvidaste tu contraseña? / Sí, quiero recuperarla" --%>
 
                 <form action="${pageContext.request.contextPath}/login"
                       method="post">
@@ -62,6 +70,16 @@
                             Iniciar sesión
                         </button>
 
+                        <%-- ★ CAMBIO 2 (NUEVO): link "¿Olvidaste tu contraseña?", solo desde el 2º fallo seguido --%>
+                        <c:if test="${ofrecerRecuperar}">
+                            <button type="submit" form="formRecuperar"
+                                    class="btn btn-link text-decoration-none">
+                                ¿Olvidaste tu contraseña?
+                            </button>
+                        </c:if>
+
+                        <hr class="my-1">
+
                         <a href="${pageContext.request.contextPath}/registro"
                            class="btn btn-outline-secondary">
                             Crear una cuenta
@@ -69,6 +87,15 @@
                     </div>
 
                 </form>
+
+                <%-- ★ CAMBIO 3 (NUEVO): formulario oculto que dispara la recuperación (paso 2 del caso de uso) --%>
+                <c:if test="${ofrecerRecuperar}">
+                    <form id="formRecuperar"
+                          action="${pageContext.request.contextPath}/recuperar"
+                          method="post" class="d-none">
+                        <input type="hidden" name="accion" value="confirmar">
+                    </form>
+                </c:if>
 
             </div>
         </div>

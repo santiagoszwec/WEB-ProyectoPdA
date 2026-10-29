@@ -49,6 +49,8 @@ public class LoginServlet extends HttpServlet {
             Usuario usuario = UsuarioDAO.iniciarSesion(correo, password);
 
             if (usuario == null) {
+                int fallos = registrarFallo(request, correo);
+                request.setAttribute("ofrecerRecuperar", fallos >= 2);
                 volverConError(request, response, "Correo o contraseña incorrectos.", correo);
                 return;
             }
@@ -93,6 +95,20 @@ public class LoginServlet extends HttpServlet {
                         "No se pudo iniciar sesión en este momento. Intentá de nuevo más tarde.", correo);
             }
         }
+    }
+
+    private int registrarFallo(HttpServletRequest request, String correo) {
+        HttpSession sesion = request.getSession(true);
+        String ultimoCorreo = (String) sesion.getAttribute("intentoCorreo");
+        Integer anteriores = (Integer) sesion.getAttribute("intentosFallidos");
+
+        int fallos = 1;
+        if (ultimoCorreo != null && ultimoCorreo.equalsIgnoreCase(correo) && anteriores != null) {
+            fallos = anteriores + 1;
+        }
+        sesion.setAttribute("intentoCorreo", correo);
+        sesion.setAttribute("intentosFallidos", fallos);
+        return fallos;
     }
 
     private void volverConError(HttpServletRequest request, HttpServletResponse response,

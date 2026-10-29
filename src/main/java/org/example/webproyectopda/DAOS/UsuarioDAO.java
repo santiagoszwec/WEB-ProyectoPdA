@@ -315,6 +315,23 @@ public class UsuarioDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public static boolean actualizarContrasenia(int usuarioId, String contraseniaNueva) {
+        String sql = "UPDATE usuario SET contrasenia = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setString(1, BCrypt.hashpw(contraseniaNueva, BCrypt.gensalt(12)));
+            sentencia.setInt(2, usuarioId);
+            return sentencia.executeUpdate() == 1;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     public static List<Usuario> filtrarPorRol(String rol) {
 
         List<Usuario> usuarios = new ArrayList<>();
