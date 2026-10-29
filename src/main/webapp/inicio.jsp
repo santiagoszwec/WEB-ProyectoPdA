@@ -51,10 +51,9 @@
                     </c:choose>
                 </div>
 
-                <%-- ★ NUEVO ===== Columna lateral: Ir a mis cursos + Atajos ===== --%>
+                <%-- Columna lateral: Ir a mis cursos + Atajos ===== --%>
                 <div class="col-lg-4 col-xl-3 order-first order-lg-last">
-                    <div class="sticky-lg-top" style="top: 1rem;">
-
+                    <div class="sticky-lg-top" style="top: 1rem; z-index: 1;">
                         <%-- Tarjeta: Ir a mis cursos --%>
                         <div class="card rounded-4 mb-3">
                             <div class="card-header bg-transparent border-0 pb-0">
