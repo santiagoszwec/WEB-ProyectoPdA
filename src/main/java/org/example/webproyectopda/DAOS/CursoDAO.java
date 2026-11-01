@@ -226,5 +226,57 @@ public class CursoDAO {
             throw new RuntimeException(e);
         }
     }
+    public static List<Curso> listarEdicionesAnteriores(String nombre, int anio, int idCursoActual) {
+        List<Curso> cursos = new ArrayList<>();
+
+        String sql = "SELECT * FROM curso " +
+                "WHERE nombre = ? AND id <> ? AND activo = TRUE " +
+                "ORDER BY anio DESC, semestre DESC";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setString(1, nombre);
+            sentencia.setInt(2, idCursoActual);
+
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    cursos.add(new Curso(
+                            resultado.getInt("id"),
+                            resultado.getString("nombre"),
+                            resultado.getInt("semestre"),
+                            resultado.getInt("anio"),
+                            resultado.getInt("creditos"),
+                            resultado.getString("descripcion"),
+                            resultado.getBoolean("activo")));
+                }
+            }
+
+            return cursos;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean tieneInscripcionEnCursoConNombre(int usuarioId, String nombre) {
+        String sql = "SELECT 1 FROM inscripcion i " +
+                "INNER JOIN curso c ON c.id = i.curso_id " +
+                "WHERE i.usuario_id = ? AND c.nombre = ? AND c.activo = TRUE LIMIT 1";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, usuarioId);
+            sentencia.setString(2, nombre);
+
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                return resultado.next();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

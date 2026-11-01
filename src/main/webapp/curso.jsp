@@ -10,6 +10,8 @@
         <jsp:include page="/layout/sidebar.jsp" />
 
         <div class="col-md-9 col-lg-10 p-4">
+            <div class="row g-4">
+                <div class="col-lg-8 col-xl-9">
 
             <a href="${pageContext.request.contextPath}/misCursos"
                class="btn btn-outline-secondary mb-3">
@@ -189,11 +191,6 @@
                                 </div>
                             </c:when>
 
-                            <c:otherwise>
-                                <div class="alert alert-secondary">
-                                    Este curso no corresponde al año actual: se muestra solo para consulta.
-                                </div>
-                            </c:otherwise>
                         </c:choose>
 
             <hr>
@@ -337,8 +334,7 @@
                 </c:when>
 
                 <c:otherwise>
-                    <%-- ★ NUEVO: reemplaza todo el bloque de cards de publicaciones (con sus modales de eliminar).
-                         Dentro del curso se muestra el autor y se habilitan Reportar / Editar / Eliminar. --%>
+
                     <c:set var="pubOcultarCurso" value="true" scope="request"/>
                     <c:set var="pubGestion" value="true" scope="request"/>
                     <div>
@@ -347,7 +343,6 @@
                             <jsp:include page="/layout/publicacion.jsp"/>
                         </c:forEach>
                     </div>
-                    <%-- ★ FIN NUEVO --%>
                 </c:otherwise>
             </c:choose>
 
@@ -375,6 +370,87 @@
                 </c:choose>
             </c:if>
         </div>
+            <div class="col-lg-4 col-xl-3 order-first order-lg-last">
+                <div class="sticky-lg-top" style="top: 1rem; z-index: 1; margin-top: 169px;">
+
+                    <div class="card rounded-4">
+                        <div class="card-header bg-transparent border-0 pb-0">
+
+                            <button type="button"
+                                    class="btn w-100 d-flex justify-content-between align-items-center fw-semibold p-0 d-lg-none"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#panelCursosAnteriores"
+                                    aria-expanded="false"
+                                    aria-controls="panelCursosAnteriores">
+                                Otras ediciones
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+
+                            <h2 class="h6 fw-semibold mb-0 d-none d-lg-block">
+                                Otras ediciones
+                            </h2>
+                        </div>
+
+                        <div class="collapse d-lg-block" id="panelCursosAnteriores">
+                            <div class="card-body pt-2">
+
+                                <c:choose>
+                                    <c:when test="${empty edicionesAnteriores}">
+                                        <p class="small text-body-secondary mb-0">
+                                            No hay cursos anteriores disponibles
+                                        </p>
+                                    </c:when>
+
+                                    <c:otherwise>
+                                        <div class="list-group list-group-flush">
+
+                                            <c:forEach var="edicion" items="${edicionesAnteriores}">
+
+                                                <c:set var="nombreCurso" value="${edicion.nombre}"/>
+                                                <c:set var="partesNombre" value="${fn:split(nombreCurso, ' ')}"/>
+
+                                                <c:set var="iniciales"
+                                                       value="${fn:toUpperCase(fn:substring(partesNombre[0], 0, 1))}${fn:length(partesNombre) > 1 ? fn:toUpperCase(fn:substring(partesNombre[fn:length(partesNombre) - 1], 0, 1)) : ''}"/>
+
+                                                <c:set var="colores"
+                                                       value="${['text-bg-primary', 'text-bg-success', 'text-bg-danger', 'text-bg-dark', 'text-bg-secondary']}"/>
+
+                                                <a href="${pageContext.request.contextPath}/curso?id=${edicion.id}"
+                                                   class="list-group-item list-group-item-action d-flex align-items-center gap-2 px-0 rounded-3">
+
+                                            <span class="rounded-circle d-flex align-items-center justify-content-center fw-bold small flex-shrink-0 ${colores[edicion.id % 5]}"
+                                                  style="width:32px;height:32px;">
+                                                <c:out value="${iniciales}"/>
+                                            </span>
+
+                                                    <span class="min-w-0" style="min-width:0;">
+                                                <span class="d-block fw-semibold small">
+                                                    <c:out value="${edicion.nombre}"/>
+                                                </span>
+
+                                                <span class="d-block small text-body-secondary">
+                                                    Año <c:out value="${edicion.anio}"/>
+                                                    · Semestre <c:out value="${edicion.semestre}"/>
+                                                </span>
+                                            </span>
+
+                                                    <i class="bi bi-chevron-right ms-auto small text-body-secondary"></i>
+                                                </a>
+
+                                            </c:forEach>
+
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </div>
 

@@ -34,20 +34,23 @@ public class CursoServlet extends HttpServlet {
             return;
         }
 
-
         try {
             int idCurso = Integer.parseInt(request.getParameter("id"));
             Curso curso = CursoDAO.buscarPorId(idCurso);
 
             if (curso == null || !curso.isActivo()) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                        "Curso no encontrado");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Curso no encontrado");
                 return;
             }
 
-            if (usuario.getRol() != TipoRol.Admin
-                    && !InscripcionDAO.existeInscripcion(usuario.getId(), curso.getId())) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "No estás inscripto en este curso");
+            boolean esAdmin = usuario.getRol() == TipoRol.Admin;
+            boolean inscriptoEnCurso = InscripcionDAO.existeInscripcion(usuario.getId(), curso.getId());
+
+            boolean tieneAcceso = esAdmin || inscriptoEnCurso
+                    || CursoDAO.tieneInscripcionEnCursoConNombre(usuario.getId(), curso.getNombre());
+
+            if (!tieneAcceso) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "No tenés acceso a este curso");
                 return;
             }
 
@@ -414,7 +417,7 @@ public class CursoServlet extends HttpServlet {
         request.setAttribute("cloudName", ConfiguracionCloudinary.getCloudName());
         request.setAttribute("uploadPreset", ConfiguracionCloudinary.getUploadPreset());
         request.setAttribute("cloudinaryConfigurado", ConfiguracionCloudinary.isConfigurada());
-
+        request.setAttribute("edicionesAnteriores", CursoDAO.listarEdicionesAnteriores(curso.getNombre(), curso.getAnio(), curso.getId()));
         cargarMateriales(request, usuario, curso);
 
         // El formulario solo aparece para administradores y usuarios inscriptos
@@ -446,7 +449,7 @@ public class CursoServlet extends HttpServlet {
                 parsearEnums(request.getParameterValues("tipoArchivo"), TipoArchivo.class);
 
         List<Publicacion> materiales;
-        if (usuario.getRol() == TipoRol.Admin) {
+        if (usuario.getRol() == TipoRol.Admin || !esDelAnioActual(curso)) {
             materiales = PublicacionDAO.filtrarMaterialesPorEtiquetas(
                     tiposMaterial, tiposArchivo, curso.getId());
         } else {
