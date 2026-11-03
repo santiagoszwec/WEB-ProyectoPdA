@@ -13,6 +13,11 @@ public class Reporte {
     private Integer publicacionId;
     private Integer comentarioId;
     private int usuarioId;
+    private String tituloPublicacion;
+    private String mensajePublicacion;
+    private String mensajeComentario;
+    private String nombreReportante;
+    private String nombreAutor;
 
     public Reporte(int id, String contenido, String motivo, String resolucion, LocalDate fechaReporte,
                    LocalDate fechaResolucion, Integer publicacionId, Integer comentarioId, int usuarioId) {
@@ -97,6 +102,46 @@ public class Reporte {
 
     public void setComentarioId(Integer comentarioId) {
         this.comentarioId = comentarioId;
+    }
+
+    public String getTituloPublicacion() {
+        return tituloPublicacion;
+    }
+
+    public void setTituloPublicacion(String tituloPublicacion) {
+        this.tituloPublicacion = tituloPublicacion;
+    }
+
+    public String getMensajePublicacion() {
+        return mensajePublicacion;
+    }
+
+    public void setMensajePublicacion(String mensajePublicacion) {
+        this.mensajePublicacion = mensajePublicacion;
+    }
+
+    public String getMensajeComentario() {
+        return mensajeComentario;
+    }
+
+    public void setMensajeComentario(String mensajeComentario) {
+        this.mensajeComentario = mensajeComentario;
+    }
+
+    public String getNombreReportante() {
+        return nombreReportante;
+    }
+
+    public void setNombreReportante(String nombreReportante) {
+        this.nombreReportante = nombreReportante;
+    }
+
+    public String getNombreAutor() {
+        return nombreAutor;
+    }
+
+    public void setNombreAutor(String nombreAutor) {
+        this.nombreAutor = nombreAutor;
     }
 
     @Override

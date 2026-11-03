@@ -8,6 +8,6 @@ public enum TipoNotificacion {
     Baja,
     Suspension,
     Material,
-    Progreso
-
+    Progreso,
+    Reporte
 }

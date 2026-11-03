@@ -50,17 +50,45 @@ public class ReporteDAO {
     }
 
     public static List<Reporte> listarReportesAbiertos() {
-        String sql = "SELECT * FROM reporte WHERE fecha_resolucion IS NULL ORDER BY fecha_reporte";
+        String sql = "SELECT r.*, " +
+                "p.titulo AS titulo_publicacion, " +
+                "p.mensaje AS mensaje_publicacion, " +
+                "c.mensaje AS mensaje_comentario, " +
+                "u_reportante.nombre AS nombre_reportante, " +
+                "u_autor.nombre AS nombre_autor " +
+                "FROM reporte r " +
+                "LEFT JOIN comentario c ON r.comentario_id = c.id " +
+                "LEFT JOIN publicacion p ON p.id = COALESCE(r.publicacion_id, c.publicacion_id) " +
+                "LEFT JOIN usuario u_reportante ON u_reportante.id = r.usuario_id " +
+                "LEFT JOIN usuario u_autor ON u_autor.id = COALESCE(p.usuario_id, c.usuario_id) " +
+                "WHERE r.fecha_resolucion IS NULL " +
+                "ORDER BY r.fecha_reporte";
         return listarConSql(sql);
     }
 
     public static List<Reporte> listarReportesPublicacionesAbiertos() {
-        String sql = "SELECT * FROM reporte WHERE publicacion_id IS NOT NULL AND fecha_resolucion IS NULL ORDER BY fecha_reporte";
+        String sql = "SELECT r.*, p.titulo AS titulo_publicacion, " +
+                "p.mensaje AS mensaje_publicacion, " +
+                "c.mensaje AS mensaje_comentario " +
+                "FROM reporte r " +
+                "LEFT JOIN publicacion p ON r.publicacion_id = p.id " +
+                "LEFT JOIN comentario c ON r.comentario_id = c.id " +
+                "WHERE r.publicacion_id IS NOT NULL AND r.fecha_resolucion IS NULL " +
+                "ORDER BY r.fecha_reporte";
+
         return listarConSql(sql);
     }
 
     public static List<Reporte> listarReportesComentariosAbiertos() {
-        String sql = "SELECT * FROM reporte WHERE comentario_id IS NOT NULL AND fecha_resolucion IS NULL ORDER BY fecha_reporte";
+        String sql = "SELECT r.*, p.titulo AS titulo_publicacion, " +
+                "p.mensaje AS mensaje_publicacion, " +
+                "c.mensaje AS mensaje_comentario " +
+                "FROM reporte r " +
+                "LEFT JOIN publicacion p ON r.publicacion_id = p.id " +
+                "LEFT JOIN comentario c ON r.comentario_id = c.id " +
+                "WHERE r.comentario_id IS NOT NULL AND r.fecha_resolucion IS NULL " +
+                "ORDER BY r.fecha_reporte";
+
         return listarConSql(sql);
     }
 
@@ -81,19 +109,35 @@ public class ReporteDAO {
     }
 
     public static Reporte buscarPorId(int id) {
-        String sql = "SELECT * FROM reporte WHERE id = ?";
+        String sql = "SELECT r.*, " +
+                "p.titulo AS titulo_publicacion, " +
+                "p.mensaje AS mensaje_publicacion, " +
+                "c.mensaje AS mensaje_comentario, " +
+                "u_reportante.nombre AS nombre_reportante, " +
+                "u_autor.nombre AS nombre_autor " +
+                "FROM reporte r " +
+                "LEFT JOIN comentario c ON r.comentario_id = c.id " +
+                "LEFT JOIN publicacion p ON p.id = COALESCE(r.publicacion_id, c.publicacion_id) " +
+                "LEFT JOIN usuario u_reportante ON u_reportante.id = r.usuario_id " +
+                "LEFT JOIN usuario u_autor ON u_autor.id = COALESCE(p.usuario_id, c.usuario_id) " +
+                "WHERE r.fecha_resolucion IS NULL " +
+                "ORDER BY r.fecha_reporte";
+
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
             sentencia.setInt(1, id);
+
             try (ResultSet filas = sentencia.executeQuery()) {
                 if (filas.next()) {
                     return mapearReporte(filas);
                 }
             }
-            return null;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return null;
     }
 
     public static boolean resolver(int id, String resolucion) {
@@ -124,6 +168,15 @@ public class ReporteDAO {
         Integer comentarioId = filas.wasNull() ? null : comId;
 
         int usuarioId = filas.getInt("usuario_id");
-        return new Reporte(id, contenido, motivo, resolucion, fechaReporte, fechaResolucion, publicacionId, comentarioId, usuarioId);
+
+        Reporte reporte = new Reporte(id, contenido, motivo, resolucion, fechaReporte, fechaResolucion, publicacionId, comentarioId, usuarioId);
+
+        reporte.setTituloPublicacion(filas.getString("titulo_publicacion"));
+        reporte.setMensajePublicacion(filas.getString("mensaje_publicacion"));
+        reporte.setMensajeComentario(filas.getString("mensaje_comentario"));
+        reporte.setNombreReportante(filas.getString("nombre_reportante"));
+        reporte.setNombreAutor(filas.getString("nombre_autor"));
+
+        return reporte;
     }
 }

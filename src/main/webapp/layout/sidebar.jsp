@@ -93,6 +93,13 @@
                     <i class="bi bi-shield-check"></i><span>Gestión de publicaciones</span>
                 </a>
             </c:if>
+            <c:if test="${sessionScope.usuarioLogueado.rol == 'Admin'}">
+                <a href="${pageContext.request.contextPath}/reportes"
+                   class="nav-link">
+                    <i class="bi bi-flag me-2"></i>
+                    Reportes
+                </a>
+            </c:if>
         </nav>
     </div>
 </aside>
