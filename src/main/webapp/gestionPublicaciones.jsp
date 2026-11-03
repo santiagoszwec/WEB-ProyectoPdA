@@ -70,10 +70,20 @@
                                             </c:choose>
                                         </td>
                                         <td class="text-end">
-                                            <a href="${pageContext.request.contextPath}/publicacion/editar?id=${publicacion.id}"
-                                               class="btn btn-sm btn-outline-primary">
-                                                Editar publicación
-                                            </a>
+                                            <form action="${pageContext.request.contextPath}/gestionPublicaciones"
+                                                  method="post"
+                                                  onsubmit="return confirm('¿Estás seguro de que querés eliminar esta publicación?');">
+
+                                                <input type="hidden" name="publicacionId"
+                                                       value="${publicacion.id}">
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                    ${not publicacion.activa ? 'disabled' : ''}>
+                                                    <i class="bi bi-trash me-1"></i>
+                                                    Eliminar
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 </c:forEach>
