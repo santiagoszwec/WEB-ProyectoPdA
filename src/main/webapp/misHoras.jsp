@@ -27,9 +27,12 @@
 
                 <c:otherwise>
 
-                    <div class="card shadow-sm mb-4">
+                    <%-- ★ NUEVO: formulario con el mismo estilo que Mi perfil --%>
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body">
-                            <h2 class="h5 mb-3">Registrar horas</h2>
+                            <h2 class="h5 fw-bold mb-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-clock"></i> Registrar horas
+                            </h2>
 
                             <c:if test="${not empty errores}">
                                 <div class="alert alert-danger" role="alert">
@@ -42,82 +45,97 @@
                             </c:if>
 
                             <form action="${pageContext.request.contextPath}/misHoras"
-                                  method="post" novalidate>
+                                  method="post" novalidate class="row g-3">
 
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-4">
-                                        <label for="materia" class="form-label">Materia</label>
-                                        <select id="materia" name="materia" class="form-select" required>
-                                            <c:forEach var="materia" items="${materias}">
-                                                <option value="${materia.key}"
-                                                        ${materia.key == materiaSeleccionada ? 'selected' : ''}>
-                                                    <c:out value="${materia.value}" />
-                                                </option>
-                                            </c:forEach>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <label for="fecha" class="form-label">Fecha</label>
-                                        <input type="date" id="fecha" name="fecha"
-                                               class="form-control" required
-                                               max="${hoy}"
-                                               value="<c:out value='${valores.fecha}' />">
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <label for="horas" class="form-label">Horas estudiadas</label>
-                                        <input type="number" id="horas" name="horas"
-                                               class="form-control" required
-                                               min="0.5" max="24" step="0.5"
-                                               placeholder="Ej.: 2.5"
-                                               value="<c:out value='${valores.horas}' />">
-                                    </div>
+                                <div class="col-md-4">
+                                    <label for="materia" class="form-label fw-semibold">Materia</label>
+                                    <select id="materia" name="materia" class="form-select" required>
+                                        <c:forEach var="materia" items="${materias}">
+                                            <option value="${materia.key}"
+                                                    ${materia.key == materiaSeleccionada ? 'selected' : ''}>
+                                                <c:out value="${materia.value}" />
+                                            </option>
+                                        </c:forEach>
+                                    </select>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary">Guardar registro</button>
+                                <div class="col-md-4">
+                                    <label for="fecha" class="form-label fw-semibold">Fecha</label>
+                                    <input type="date" id="fecha" name="fecha"
+                                           class="form-control" required
+                                           max="${hoy}"
+                                           value="<c:out value='${valores.fecha}' />">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="horas" class="form-label fw-semibold">Horas estudiadas</label>
+                                    <input type="number" id="horas" name="horas"
+                                           class="form-control" required
+                                           min="0.5" max="24" step="0.5"
+                                           placeholder="Ej.: 2.5"
+                                           value="<c:out value='${valores.horas}' />">
+                                    <div class="form-text">De 0,5 a 24 horas, de a media hora.</div>
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-dark rounded-pill px-4 fw-semibold">
+                                        Guardar registro
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-lg-6">
-                            <div class="card shadow-sm h-100">
+                            <%-- ★ NUEVO: mismo estilo que "Progreso de estudio" del perfil --%>
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
                                 <div class="card-body">
-                                    <h2 class="h5 mb-3">Horas por materia</h2>
+                                    <h2 class="h5 fw-bold mb-3 d-flex align-items-center gap-2">
+                                        <i class="bi bi-book"></i> Horas por materia
+                                    </h2>
 
                                     <c:choose>
                                         <c:when test="${empty totales}">
                                             <p class="text-muted mb-0">Todavía no hay registros.</p>
                                         </c:when>
                                         <c:otherwise>
-                                            <div class="table-responsive">
-                                                <table class="table table-sm align-middle mb-0">
-                                                    <thead>
-                                                        <tr>
-                                                            <th scope="col">Materia</th>
-                                                            <th scope="col" class="text-end">Horas</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <c:forEach var="total" items="${totales}">
-                                                            <tr>
-                                                                <td><c:out value="${total.curso}" /></td>
-                                                                <td class="text-end">
-                                                                    <c:out value="${total.totalHoras}" />
-                                                                </td>
-                                                            </tr>
-                                                        </c:forEach>
-                                                    </tbody>
-                                                    <tfoot>
-                                                        <tr class="table-light fw-semibold">
-                                                            <td>Total general</td>
-                                                            <td class="text-end">
-                                                                <c:out value="${totalGeneral}" />
-                                                            </td>
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>
+                                            <%-- La materia con más horas = barra completa; las demás, proporcionales --%>
+                                            <c:set var="maxHoras" value="0" />
+                                            <c:forEach var="total" items="${totales}">
+                                                <c:if test="${total.totalHoras gt maxHoras}">
+                                                    <c:set var="maxHoras" value="${total.totalHoras}" />
+                                                </c:if>
+                                            </c:forEach>
+
+                                            <ul class="list-unstyled d-flex flex-column gap-3 mb-3">
+                                                <c:forEach var="total" items="${totales}">
+                                                    <c:set var="ancho"
+                                                           value="${maxHoras gt 0 ? total.totalHoras * 100 / maxHoras : 0}" />
+                                                    <li>
+                                                        <div class="d-flex justify-content-between small mb-1">
+                                                            <span class="fw-semibold"><c:out value="${total.curso}" /></span>
+                                                            <span class="text-body-secondary">
+                                                                <c:out value="${total.totalHoras}" /> h
+                                                            </span>
+                                                        </div>
+                                                        <div class="progress" style="height: 8px;">
+                                                            <div class="progress-bar"
+                                                                 role="progressbar"
+                                                                 style="width: ${ancho}%; background-color: #2f6db5;"
+                                                                 aria-valuenow="${ancho}"
+                                                                 aria-valuemin="0"
+                                                                 aria-valuemax="100"></div>
+                                                        </div>
+                                                    </li>
+                                                </c:forEach>
+                                            </ul>
+
+                                            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                                <span class="fw-semibold">Total general</span>
+                                                <span class="badge text-bg-dark rounded-pill fs-6">
+                                                    <c:out value="${totalGeneral}" /> h
+                                                </span>
                                             </div>
                                         </c:otherwise>
                                     </c:choose>

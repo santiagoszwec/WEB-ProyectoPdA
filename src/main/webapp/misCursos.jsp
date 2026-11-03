@@ -42,39 +42,50 @@
             </c:if>
 
             <c:if test="${totalCursos > 0}">
+                <%-- ★ NUEVO: el filtro ahora va dentro de una tarjeta (mismos campos y mismo action) --%>
                 <form action="${pageContext.request.contextPath}/misCursos"
                       method="get"
-                      class="row g-2 align-items-end mb-4">
+                      class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-end">
 
-                    <div class="col-12 col-md-5">
-                        <label for="buscar" class="form-label">Buscar por nombre</label>
-                        <input type="text"
-                               id="buscar"
-                               name="buscar"
-                               class="form-control"
-                               placeholder="Nombre del curso"
-                               value="<c:out value='${buscar}' />">
-                    </div>
+                            <div class="col-12 col-md-5">
+                                <label for="buscar" class="form-label fw-semibold">Buscar por nombre</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-body border-end-0 text-secondary">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text"
+                                           id="buscar"
+                                           name="buscar"
+                                           class="form-control border-start-0"
+                                           placeholder="Nombre del curso"
+                                           value="<c:out value='${buscar}' />">
+                                </div>
+                            </div>
 
-                    <div class="col-12 col-md-3">
-                        <label for="estado" class="form-label">Estado</label>
-                        <select id="estado" name="estado" class="form-select">
-                            <option value="">Todos</option>
-                            <option value="Cursando" ${estadoElegido == 'Cursando' ? 'selected' : ''}>Cursando</option>
-                            <option value="Cursada" ${estadoElegido == 'Cursada' ? 'selected' : ''}>Cursada</option>
-                            <option value="Aprobada" ${estadoElegido == 'Aprobada' ? 'selected' : ''}>Aprobada</option>
-                        </select>
-                    </div>
+                            <div class="col-12 col-md-3">
+                                <label for="estado" class="form-label fw-semibold">Estado</label>
+                                <select id="estado" name="estado" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option value="Cursando" ${estadoElegido == 'Cursando' ? 'selected' : ''}>Cursando</option>
+                                    <option value="Cursada" ${estadoElegido == 'Cursada' ? 'selected' : ''}>Cursada</option>
+                                    <option value="Aprobada" ${estadoElegido == 'Aprobada' ? 'selected' : ''}>Aprobada</option>
+                                </select>
+                            </div>
 
-                    <div class="col-12 col-md-4 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            Buscar cursos
-                        </button>
+                            <div class="col-12 col-md-4 d-flex flex-wrap gap-2">
+                                <button type="submit" class="btn btn-dark rounded-pill px-4 fw-semibold">
+                                    Buscar cursos
+                                </button>
 
-                        <a href="${pageContext.request.contextPath}/misCursos"
-                           class="btn btn-outline-secondary">
-                            Limpiar filtros
-                        </a>
+                                <a href="${pageContext.request.contextPath}/misCursos"
+                                   class="btn btn-outline-secondary rounded-pill px-4 fw-semibold">
+                                    Limpiar filtros
+                                </a>
+                            </div>
+
+                        </div>
                     </div>
                 </form>
             </c:if>

@@ -37,9 +37,10 @@
             </p>
 
             <c:if test="${estadoCurso == 'Cursando'}">
+                <%-- ★ NUEVO: botón negro redondeado con ícono (mismo link) --%>
                 <a href="${pageContext.request.contextPath}/progreso?curso=${curso.id}"
-                   class="btn btn-primary mb-4">
-                    Mi progreso
+                   class="btn btn-dark rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-graph-up"></i> Mi progreso
                 </a>
             </c:if>
 
@@ -51,9 +52,12 @@
 
             <c:choose>
                             <c:when test="${puedePublicar}">
-                                <div class="card shadow-sm mb-4">
+                                <%-- ★ NUEVO: tarjeta "Nueva publicación" con el estilo del perfil --%>
+                                <div class="card border-0 shadow-sm rounded-4 mb-4">
                                     <div class="card-body">
-                                        <h2 class="h5 mb-3">Nueva publicación</h2>
+                                        <h2 class="h5 fw-bold mb-3 d-flex align-items-center gap-2">
+                                            <i class="bi bi-pencil"></i> Nueva publicación
+                                        </h2>
 
                                         <%-- Errores de validación que manda el servlet --%>
                                         <c:if test="${not empty errores}">
@@ -76,7 +80,7 @@
                                             <input type="hidden" id="imagenPublicId" name="imagenPublicId" value="<c:out value='${valorImagenPublicId}' />">
 
                                             <div class="mb-3">
-                                                <label for="titulo" class="form-label">Título</label>
+                                                <label for="titulo" class="form-label fw-semibold">Título</label>
                                                 <input type="text"
                                                        id="titulo"
                                                        name="titulo"
@@ -87,46 +91,50 @@
                                             </div>
 
                                             <div class="mb-3">
-                                                <label for="mensaje" class="form-label">Mensaje</label>
+                                                <label for="mensaje" class="form-label fw-semibold">Mensaje</label>
                                                 <textarea id="mensaje" name="mensaje" class="form-control"
                                                           rows="3" maxlength="2000"><c:out value="${valorMensaje}" /></textarea>
                                             </div>
 
-                                            <div class="mb-3">
-                                                <label for="fechaLimite" class="form-label">
-                                                    Fecha límite <span class="text-muted">(opcional)</span>
-                                                </label>
+                                            <%-- ★ NUEVO: fecha límite e imagen/PDF en una misma fila --%>
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="fechaLimite" class="form-label fw-semibold">
+                                                        Fecha límite <span class="text-muted fw-normal">(opcional)</span>
+                                                    </label>
 
-                                                <input type="date"
-                                                       id="fechaLimite"
-                                                       name="fechaLimite"
-                                                       class="form-control"
-                                                       value="<c:out value='${valorFechaLimite}' />"
-                                                       min="<%= java.time.LocalDate.now() %>">
-
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label for="archivoImagen" class="form-label">Imagen o PDF <span class="text-muted">(opcional)</span></label>
-                                                <input type="file" id="archivoImagen" class="form-control"
-                                                       accept="image/jpeg,image/png,application/pdf"
-                                                       ${cloudinaryConfigurado ? '' : 'disabled'}>
-                                                <small class="text-muted">JPG, PNG o PDF, hasta 10 MB. Se sube al publicar.</small>
-
-                                                <c:if test="${not cloudinaryConfigurado}">
-                                                    <p class="alert alert-info mt-2 mb-0">La subida de archivos aún no está configurada. Podés publicar sin adjunto.</p>
-                                                </c:if>
-
-                                                <div id="contenedorPreview" class="preview mt-2" hidden>
-                                                    <img id="previewImagen" alt="Vista previa del archivo">
-                                                    <button id="quitarImagen" type="button" class="btn btn-sm btn-outline-secondary ms-2">Quitar archivo</button>
+                                                    <input type="date"
+                                                           id="fechaLimite"
+                                                           name="fechaLimite"
+                                                           class="form-control"
+                                                           value="<c:out value='${valorFechaLimite}' />"
+                                                           min="<%= java.time.LocalDate.now() %>">
                                                 </div>
-                                                <p id="estadoImagen" class="small mt-2 mb-0" role="status" aria-live="polite"></p>
+
+                                                <div class="col-md-6">
+                                                    <label for="archivoImagen" class="form-label fw-semibold">Imagen o PDF <span class="text-muted fw-normal">(opcional)</span></label>
+                                                    <input type="file" id="archivoImagen" class="form-control"
+                                                           accept="image/jpeg,image/png,application/pdf"
+                                                           ${cloudinaryConfigurado ? '' : 'disabled'}>
+                                                    <div class="form-text">JPG, PNG o PDF, hasta 10 MB. Se sube al publicar.</div>
+
+                                                    <c:if test="${not cloudinaryConfigurado}">
+                                                        <p class="alert alert-info mt-2 mb-0">La subida de archivos aún no está configurada. Podés publicar sin adjunto.</p>
+                                                    </c:if>
+
+                                                    <div id="contenedorPreview" class="preview mt-2" hidden>
+                                                        <img id="previewImagen" alt="Vista previa del archivo">
+                                                        <button id="quitarImagen" type="button" class="btn btn-sm btn-outline-secondary ms-2">Quitar archivo</button>
+                                                    </div>
+                                                    <p id="estadoImagen" class="small mt-2 mb-0" role="status" aria-live="polite"></p>
+                                                </div>
                                             </div>
+
+                                            <hr class="my-3">
 
                                             <div class="row g-3 mb-3">
                                                 <div class="col-md-6">
-                                                    <label for="tipo" class="form-label">Tipo</label>
+                                                    <label for="tipo" class="form-label fw-semibold">Tipo</label>
                                                     <select id="tipo" name="tipo" class="form-select">
                                                         <option value="">Seleccioná un tipo</option>
                                                         <option value="Duda" ${valorTipo == 'Duda' ? 'selected' : ''}>Duda</option>
@@ -137,7 +145,7 @@
                                                     </select>
                                                 </div>
                                                 <div class="col-md-6" id="grupoCategoria">
-                                                    <label for="categoria" class="form-label">Categoría</label>
+                                                    <label for="categoria" class="form-label fw-semibold">Categoría</label>
                                                     <select id="categoria" name="categoria" class="form-select">
                                                         <option value="">Seleccioná una categoría</option>
                                                         <option value="Ejercicio" ${valorCategoria == 'Ejercicio' ? 'selected' : ''}>Ejercicio</option>
@@ -149,7 +157,7 @@
 
                                             <div id="grupoMaterial" class="row g-3 mb-3" style="display: none;">
                                                 <div class="col-md-6">
-                                                    <label for="tipoMaterial" class="form-label">Tipo de material</label>
+                                                    <label for="tipoMaterial" class="form-label fw-semibold">Tipo de material</label>
                                                     <select id="tipoMaterial" name="tipoMaterial" class="form-select">
                                                         <option value="">Seleccioná un tipo de material</option>
                                                         <option value="Apuntes" ${valorTipoMaterial == 'Apuntes' ? 'selected' : ''}>Apuntes</option>
@@ -159,7 +167,7 @@
                                                     </select>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label for="tipoArchivo" class="form-label">Tipo de archivo</label>
+                                                    <label for="tipoArchivo" class="form-label fw-semibold">Tipo de archivo</label>
                                                     <select id="tipoArchivo" name="tipoArchivo" class="form-select">
                                                         <option value="">Seleccioná un tipo de archivo</option>
                                                         <option value="JPG" ${valorTipoArchivo == 'JPG' ? 'selected' : ''}>JPG</option>
@@ -168,14 +176,14 @@
                                                     </select>
                                                 </div>
                                                 <div class="col-12">
-                                                    <label for="archivoUrl" class="form-label">URL del archivo</label>
+                                                    <label for="archivoUrl" class="form-label fw-semibold">URL del archivo</label>
                                                     <input type="text" id="archivoUrl" name="archivoUrl"
                                                            class="form-control"
                                                            placeholder="https://ejemplo.com/archivo.pdf"
                                                            value="<c:out value='${valorArchivoUrl}' />">
                                                 </div>
                                                 <div class="col-12">
-                                                    <label for="tema" class="form-label">Tema</label>
+                                                    <label for="tema" class="form-label fw-semibold">Tema</label>
                                                     <input type="text" id="tema" name="tema"
                                                            class="form-control" maxlength="100"
                                                            placeholder="Ej.: Integrales definidas"
@@ -183,7 +191,7 @@
                                                 </div>
                                             </div>
 
-                                            <button type="submit" id="botonGuardar" class="btn btn-primary"
+                                            <button type="submit" id="botonGuardar" class="btn btn-dark rounded-pill px-4 fw-semibold"
                                                     data-texto="Publicar en el curso">Publicar en el curso</button>
                                         </form>
                                         <script src="${pageContext.request.contextPath}/js/subida-imagen.js" defer></script>
@@ -195,11 +203,12 @@
 
             <hr>
 
-            <h2 class="h4 mb-3">Material de Estudio</h2>
+            <h2 class="h4 fw-bold mb-3">Material de Estudio</h2>
 
+            <%-- ★ NUEVO: filtro de material con el estilo del perfil (mismos campos, mismo action) --%>
             <form method="get"
                   action="${pageContext.request.contextPath}/curso"
-                  class="card shadow-sm mb-3">
+                  class="card border-0 shadow-sm rounded-4 mb-3">
                 <div class="card-body">
                     <input type="hidden" name="id" value="${curso.id}">
 
@@ -248,14 +257,14 @@
                             </div>
                         </div>
 
-                        <div class="col-md-3 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Filtrar material</button>
+                        <div class="col-md-3 d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-dark rounded-pill px-4 fw-semibold">Filtrar material</button>
                             <a href="${pageContext.request.contextPath}/curso?id=${curso.id}"
-                               class="btn btn-outline-secondary">Limpiar filtros</a>
+                               class="btn btn-outline-secondary rounded-pill px-4 fw-semibold">Limpiar filtros</a>
                         </div>
                     </div>
 
-                    <p class="text-muted small mb-0 mt-2">
+                    <p class="text-body-secondary small mb-0 mt-3">
                         Podés combinar etiquetas: se muestran los materiales que cumplen
                         con lo seleccionado en cada tipo.
                     </p>
@@ -279,7 +288,6 @@
                     <div class="row g-3 mb-4">
                         <c:forEach var="material" items="${materiales}">
                             <div class="col-md-6 col-xl-4 d-flex">
-                                <%-- ★ NUEVO: antes decía "card shadow-sm w-100" --%>
                                 <div class="card pub-reddit w-100">
                                     <div class="card-body">
                                         <div class="d-flex flex-wrap gap-2 mb-2">
