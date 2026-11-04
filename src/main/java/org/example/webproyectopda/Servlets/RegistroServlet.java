@@ -29,8 +29,8 @@ public class RegistroServlet extends HttpServlet {
         String anio = request.getParameter("anioDeGeneracion");
         String repetirPassword = request.getParameter("repetirPassword");
 
-        if (correo == null || correo.isBlank() || password == null || password.isBlank() ||
-                nombre == null || nombre.isBlank() || anio == null || anio.isBlank()) {
+        if (correo == null || correo.trim().isEmpty() || password == null || password.trim().isEmpty() ||
+                nombre == null || nombre.trim().isEmpty() || anio == null || anio.trim().isEmpty()) {
             request.setAttribute("error", "Todos los campos son obligatorios");
             request.getRequestDispatcher("/registro.jsp").forward(request, response);
             return;

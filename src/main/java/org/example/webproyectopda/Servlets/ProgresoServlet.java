@@ -119,8 +119,8 @@ public class ProgresoServlet extends HttpServlet {
                               Curso curso, Inscripcion inscripcion, String volver)
             throws ServletException, IOException, SQLException {
 
-        String titulo = texto(request.getParameter("titulo")).strip();
-        String fechaTexto = texto(request.getParameter("fechaLimite")).strip();
+        String titulo = texto(request.getParameter("titulo")).trim();
+        String fechaTexto = texto(request.getParameter("fechaLimite")).trim();
         request.setAttribute("valorTitulo", titulo);
         request.setAttribute("valorFecha", fechaTexto);
 

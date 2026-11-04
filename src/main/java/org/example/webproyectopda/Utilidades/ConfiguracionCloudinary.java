@@ -21,16 +21,16 @@ public class ConfiguracionCloudinary {
 
     public static String getCloudName() {
         return System.getProperty("cloudinary.cloud_name",
-                PROPIEDADES.getProperty("cloudinary.cloud_name", "")).strip();
+                PROPIEDADES.getProperty("cloudinary.cloud_name", "")).trim();
     }
 
     public static String getUploadPreset() {
         return System.getProperty("cloudinary.upload_preset",
-                PROPIEDADES.getProperty("cloudinary.upload_preset", "")).strip();
+                PROPIEDADES.getProperty("cloudinary.upload_preset", "")).trim();
     }
 
     public static boolean isConfigurada() {
         return getCloudName().matches("[a-z0-9_-]+")
-                && !getUploadPreset().isBlank() && !getUploadPreset().startsWith("TU_");
+                && !getUploadPreset().trim().isEmpty() && !getUploadPreset().startsWith("TU_");
     }
 }

@@ -112,8 +112,8 @@ public class CursoServlet extends HttpServlet {
             }
 
             String mensaje = request.getParameter("mensaje");
-            String imagenUrl = texto(request.getParameter("imagenUrl")).strip();
-            String imagenPublicId = texto(request.getParameter("imagenPublicId")).strip();
+            String imagenUrl = texto(request.getParameter("imagenUrl")).trim();
+            String imagenPublicId = texto(request.getParameter("imagenPublicId")).trim();
             String tipo = request.getParameter("tipo");
             String categoriaTexto = request.getParameter("categoria");
             String titulo = request.getParameter("titulo");
@@ -135,13 +135,13 @@ public class CursoServlet extends HttpServlet {
                 errores.add(e.getMessage());
             }
 
-            if (titulo == null || titulo.isBlank()) {
+            if (titulo == null || titulo.trim().isEmpty()) {
                 errores.add("El título no puede estar vacío.");
             } else if (titulo.trim().length() > 150) {
                 errores.add("El título no puede superar los 150 caracteres.");
             }
 
-            if (fechaLimiteTexto != null && !fechaLimiteTexto.isBlank()) {
+            if (fechaLimiteTexto != null && !fechaLimiteTexto.trim().isEmpty()) {
                 try {
                     fechaLimite = LocalDate.parse(fechaLimiteTexto);
 
@@ -171,13 +171,13 @@ public class CursoServlet extends HttpServlet {
                 return;
             }
 
-            if (titulo == null || titulo.isBlank()) {
+            if (titulo == null || titulo.trim().isEmpty()) {
                 errores.add("El título no puede estar vacío");
             } else if (titulo.trim().length() > 150) {
                 errores.add("El título no puede superar los 150 caracteres");
             }
 
-            if (fechaLimiteTexto != null && !fechaLimiteTexto.isBlank()) {
+            if (fechaLimiteTexto != null && !fechaLimiteTexto.trim().isEmpty()) {
                 try {
                     fechaLimite = LocalDate.parse(fechaLimiteTexto);
                     if (fechaLimite.isBefore(LocalDate.now())) {
@@ -312,7 +312,7 @@ public class CursoServlet extends HttpServlet {
     }
 
     private String validarMotivo(String motivo) {
-        if (motivo == null || motivo.isBlank()) {
+        if (motivo == null || motivo.trim().isEmpty()) {
             return "El motivo del reporte no puede estar vacío.";
         }
         if (motivo.trim().length() > MAX_MOTIVO) {
@@ -327,7 +327,7 @@ public class CursoServlet extends HttpServlet {
         List<String> errores = new ArrayList<>();
         boolean esAdmin = usuario.getRol() == TipoRol.Admin;
 
-        if (mensaje == null || mensaje.isBlank()) {
+        if (mensaje == null || mensaje.trim().isEmpty()) {
             errores.add("El mensaje no puede estar vacío.");
         } else if (mensaje.trim().length() > MAX_MENSAJE) {
             errores.add("El mensaje no puede superar los " + MAX_MENSAJE + " caracteres.");
@@ -346,7 +346,7 @@ public class CursoServlet extends HttpServlet {
         }
 
         if (esMaterial) {
-            if (archivoUrl == null || archivoUrl.isBlank()) {
+            if (archivoUrl == null || archivoUrl.trim().isEmpty()) {
                 errores.add("Ingresá la URL del archivo del material.");
             } else if (!urlValida(archivoUrl.trim())) {
                 errores.add("La URL del archivo debe comenzar con http:// o https:// y tener un formato correcto.");
@@ -359,7 +359,7 @@ public class CursoServlet extends HttpServlet {
                 errores.add("Seleccioná un tipo de archivo válido: JPG, PDF o PNG.");
             }
 
-            if (tema == null || tema.isBlank()) {
+            if (tema == null || tema.trim().isEmpty()) {
                 errores.add("Ingresá el tema del material.");
             } else if (tema.trim().length() > 100) {
                 errores.add("El tema no puede superar los 100 caracteres.");
@@ -470,7 +470,7 @@ public class CursoServlet extends HttpServlet {
             return retorno;
         }
         for (String valor : valores) {
-            if (valor == null || valor.isBlank()) {
+            if (valor == null || valor.trim().isEmpty()) {
                 continue;
             }
             try {

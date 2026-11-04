@@ -372,7 +372,7 @@ public class UsuarioDAO {
                 int id = filas.getInt("id");
                 String password = filas.getString("contrasenia");
 
-                if (password == null || password.isBlank()) {
+                if (password == null || password.trim().isEmpty()) {
                     continue;
                 }
 

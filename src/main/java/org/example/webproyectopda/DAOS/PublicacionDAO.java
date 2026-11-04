@@ -722,11 +722,11 @@ public class PublicacionDAO {
 
         List<String> parametros = new ArrayList<>();
 
-        if (texto != null && !texto.isBlank()) {
+        if (texto != null && !texto.trim().isEmpty()) {
             sql.append("AND p.mensaje LIKE ? ");
             parametros.add("%" + texto.trim() + "%");
         }
-        if (categoria != null && !categoria.isBlank()) {
+        if (categoria != null && !categoria.trim().isEmpty()) {
             sql.append("AND d.categoria = ? ");
             parametros.add(categoria.trim());
         }

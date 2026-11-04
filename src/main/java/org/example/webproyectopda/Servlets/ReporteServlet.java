@@ -93,7 +93,7 @@ public class ReporteServlet extends HttpServlet {
 
             if ("rechazar".equals(accion)) {
 
-                String resolucion = (motivo == null || motivo.isBlank())
+                String resolucion = (motivo == null || motivo.trim().isEmpty())
                         ? "Reporte rechazado por el administrador"
                         : "Reporte rechazado. Motivo: " + motivo;
 
@@ -111,7 +111,7 @@ public class ReporteServlet extends HttpServlet {
 
             } else if ("aprobar".equals(accion)) {
 
-                if (motivo == null || motivo.isBlank()) {
+                if (motivo == null || motivo.trim().isEmpty()) {
                     session.setAttribute("mensajeReportes", "Debés indicar el motivo de la baja.");
                     response.sendRedirect(request.getContextPath() + "/reportes");
                     return;

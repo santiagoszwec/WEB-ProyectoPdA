@@ -38,7 +38,7 @@ public class LoginServlet extends HttpServlet {
         String correo = request.getParameter("correo");
         String password = request.getParameter("password");
 
-        if (correo == null || correo.isBlank() || password == null || password.isBlank()) {
+        if (correo == null || correo.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             volverConError(request, response, "Complete el correo y la contraseña.", correo);
             return;
         }

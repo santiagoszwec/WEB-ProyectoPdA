@@ -43,7 +43,7 @@ public class PerfilServlet extends HttpServlet {
         String idParam = request.getParameter("id");
         int estudianteId;
         try {
-            estudianteId = (idParam == null || idParam.isBlank())
+            estudianteId = (idParam == null || idParam.trim().isEmpty())
                     ? usuario.getId()
                     : Integer.parseInt(idParam);
         } catch (NumberFormatException e) {
@@ -158,13 +158,13 @@ public class PerfilServlet extends HttpServlet {
 
         List<String> errores = new ArrayList<>();
 
-        if (nombre == null || nombre.isBlank()) {
+        if (nombre == null || nombre.trim().isEmpty()) {
             errores.add("El nombre no puede estar vacío.");
         } else if (nombre.trim().length() > MAX_NOMBRE) {
             errores.add("El nombre no puede superar los " + MAX_NOMBRE + " caracteres.");
         }
 
-        if (correo == null || correo.isBlank()) {
+        if (correo == null || correo.trim().isEmpty()) {
             errores.add("El correo no puede estar vacío.");
         } else if (correo.trim().length() > MAX_CORREO) {
             errores.add("El correo no puede superar los " + MAX_CORREO + " caracteres.");
@@ -172,7 +172,7 @@ public class PerfilServlet extends HttpServlet {
             errores.add("Ingresá un correo válido.");
         }
 
-        if (anio == null || anio.isBlank()) {
+        if (anio == null || anio.trim().isEmpty()) {
             errores.add("El año de generación es obligatorio.");
         } else {
             try {

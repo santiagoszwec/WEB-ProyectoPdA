@@ -33,7 +33,7 @@ public class MisCursosServlet extends HttpServlet {
         String estadoTexto = request.getParameter("estado");
 
         TipoEstado estado = null;
-        if (estadoTexto != null && !estadoTexto.isBlank()) {
+        if (estadoTexto != null && !estadoTexto.trim().isEmpty()) {
             try {
                 estado = TipoEstado.valueOf(estadoTexto);
             } catch (IllegalArgumentException e) {
@@ -47,7 +47,7 @@ public class MisCursosServlet extends HttpServlet {
 
         request.setAttribute("cursos", cursos);
         request.setAttribute("totalCursos", totalCursos);
-        request.setAttribute("hayFiltros", (buscar != null && !buscar.isBlank()) || estado != null);
+        request.setAttribute("hayFiltros", (buscar != null && !buscar.trim().isEmpty()) || estado != null);
         // el formulario conserva lo que la persona habia elegido
         request.setAttribute("buscar", buscar);
         request.setAttribute("estadoElegido", estado == null ? "" : estado.name());

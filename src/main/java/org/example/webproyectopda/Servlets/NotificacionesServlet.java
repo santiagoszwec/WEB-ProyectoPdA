@@ -37,7 +37,7 @@ public class NotificacionesServlet extends HttpServlet {
         String ordenParam = request.getParameter("orden");
 
         TipoNotificacion tipo = null; // null = "Todos"
-        if (tipoParam != null && !tipoParam.isBlank()) {
+        if (tipoParam != null && !tipoParam.trim().isEmpty()) {
             try {
                 tipo = TipoNotificacion.valueOf(tipoParam);
             } catch (IllegalArgumentException e) {

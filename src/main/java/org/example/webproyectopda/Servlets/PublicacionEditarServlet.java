@@ -161,7 +161,7 @@ public class PublicacionEditarServlet extends HttpServlet {
                                  String archivoUrl) {
         List<String> errores = new ArrayList<>();
 
-        if (mensaje == null || mensaje.isBlank()) {
+        if (mensaje == null || mensaje.trim().isEmpty()) {
             errores.add("El mensaje no puede estar vacío.");
         } else if (mensaje.trim().length() > Validaciones.MAX_MENSAJE) {
             errores.add("El mensaje no puede superar los " + Validaciones.MAX_MENSAJE + " caracteres.");

@@ -72,7 +72,7 @@ public class HorasServlet extends HttpServlet {
         }
 
         LocalDate fecha = null;
-        if (fechaParam == null || fechaParam.isBlank()) {
+        if (fechaParam == null || fechaParam.trim().isEmpty()) {
             errores.add("Ingresá la fecha del registro.");
         } else {
             try {
@@ -87,7 +87,7 @@ public class HorasServlet extends HttpServlet {
         }
 
         Float horas = null;
-        if (horasParam == null || horasParam.isBlank()) {
+        if (horasParam == null || horasParam.trim().isEmpty()) {
             errores.add("Ingresá las horas estudiadas.");
         } else {
             try {

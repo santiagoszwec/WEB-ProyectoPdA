@@ -25,14 +25,14 @@ public final class Validaciones {
 
         try {
             URI uri = new URI(url);
-            return uri.getHost() != null && !uri.getHost().isBlank();
+            return uri.getHost() != null && !uri.getHost().trim().isEmpty();
         } catch (URISyntaxException e) {
             return false;
         }
     }
 
     public static <E extends Enum<E>> boolean enumValido(Class<E> tipoEnum, String valor) {
-        if (valor == null || valor.isBlank()) {
+        if (valor == null || valor.trim().isEmpty()) {
             return false;
         }
         for (E constante : tipoEnum.getEnumConstants()) {

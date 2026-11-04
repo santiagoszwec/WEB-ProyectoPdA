@@ -89,7 +89,7 @@ public class RecuperarContraseniaServlet extends HttpServlet {
         String nueva = request.getParameter("nuevaPassword");
         String repetida = request.getParameter("repetirPassword");
 
-        if (nueva == null || nueva.isBlank() || repetida == null || repetida.isBlank()) {
+        if (nueva == null || nueva.trim().isEmpty() || repetida == null || repetida.trim().isEmpty()) {
             mostrarFormulario(request, response, correo, "Escribí la contraseña nueva y repetila para confirmarla.");
             return;
         }

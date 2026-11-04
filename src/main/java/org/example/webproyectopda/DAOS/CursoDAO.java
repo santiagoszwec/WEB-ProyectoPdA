@@ -158,7 +158,7 @@ public class CursoDAO {
         String sql = "SELECT c.*, i.estado AS estado_inscripcion FROM curso c "
                 + "INNER JOIN inscripcion i ON i.curso_id = c.id "
                 + "WHERE i.usuario_id = ? AND c.activo = TRUE";
-        if (texto != null && !texto.isBlank()) { //si escribis algo en el buscador
+        if (texto != null && !texto.trim().isEmpty()) { //si escribis algo en el buscador
             sql += " AND c.nombre LIKE ?";
         }
         if (estado != null) {
@@ -171,7 +171,7 @@ public class CursoDAO {
 
             int posicion = 1;
             sentencia.setInt(posicion++, usuarioId);
-            if (texto != null && !texto.isBlank()) {
+            if (texto != null && !texto.trim().isEmpty()) {
                 sentencia.setString(posicion++, "%" + texto.trim() + "%");
             }
             if (estado != null) {
