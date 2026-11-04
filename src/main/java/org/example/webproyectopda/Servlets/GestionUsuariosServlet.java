@@ -90,7 +90,7 @@ public class GestionUsuariosServlet extends HttpServlet {
         String accion = request.getParameter("accion");
         String idParam = request.getParameter("usuarioId");
 
-        if (idParam == null || idParam.isBlank()) {
+        if (idParam == null || idParam.trim().isEmpty()) {
             sesionMensaje(request, "mensajeError", "No se especificó el usuario.");
             response.sendRedirect(request.getContextPath() + "/gestionUsuarios");
             return;
@@ -109,7 +109,7 @@ public class GestionUsuariosServlet extends HttpServlet {
             String motivo = request.getParameter("motivo");
             String diasParam = request.getParameter("dias");
 
-            if (motivo == null || motivo.isBlank()) {
+            if (motivo == null || motivo.trim().isEmpty()) {
                 sesionMensaje(request, "mensajeError", "El motivo es obligatorio.");
                 response.sendRedirect(request.getContextPath() + "/gestionUsuarios");
                 return;
