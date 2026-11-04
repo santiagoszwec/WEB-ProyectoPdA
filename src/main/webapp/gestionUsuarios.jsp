@@ -77,7 +77,7 @@
                                                 <td class="text-center small">
                                                     <c:choose>
                                                         <c:when test="${not empty s}">
-                                                            <fmt:formatDate value="${s.fechaFin}" type="date" datePattern="dd/MM/yyyy" />
+                                                            <c:out value="${s.fechaFin}" />
                                                         </c:when>
                                                         <c:otherwise>
                                                             <span class="text-body-secondary">—</span>
