@@ -29,7 +29,6 @@
                 <a href="${pageContext.request.contextPath}/curso?id=${duda.cursoId}"
                    class="btn btn-link px-0 mb-3">← Volver al curso</a>
 
-                <%-- ★ NUEVO: antes decía "card shadow-sm mb-4" --%>
                 <div class="card pub-reddit mb-4">
                     <div class="card-body">
                         <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
@@ -61,7 +60,6 @@
                 </c:if>
 
                 <c:forEach var="respuesta" items="${respuestas}">
-                    <%-- ★ NUEVO: se agregó "pub-reddit" a la clase (los bordes verde/azul siguen funcionando) --%>
                     <div id="respuesta-${respuesta.id}"
                          class="card pub-reddit mb-3 ${respuesta.destacado ? 'border-success' : ''} ${respuestaAComentar.id == respuesta.id ? 'border-primary border-2' : ''}">
                         <div class="card-body">
@@ -90,10 +88,13 @@
                                                        </c:choose>
 
                             <div class="mt-2 d-flex align-items-center gap-2">
-                                <a href="${pageContext.request.contextPath}/duda?id=${duda.id}&comentar=${respuesta.id}#formImagen"
-                                   class="btn btn-sm btn-outline-secondary">
-                                    Comentar
-                                </a>
+                                <%-- ★ NUEVO: solo se puede comentar en cursos del año actual --%>
+                                <c:if test="${cursoDelAnioActual}">
+                                    <a href="${pageContext.request.contextPath}/duda?id=${duda.id}&comentar=${respuesta.id}#formImagen"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        Comentar
+                                    </a>
+                                </c:if>
 
                                 <c:if test="${puedeMarcarUtil}">
                                     <form method="post"
@@ -330,7 +331,15 @@
                         <script src="${pageContext.request.contextPath}/js/subida-imagen.js" defer></script>
                     </c:when>
                     <c:otherwise>
-                        <div class="alert alert-secondary">Esta duda está resuelta: no admite nuevas respuestas.</div>
+                        <%-- ★ NUEVO: el motivo depende de si el curso es de un año anterior o la duda ya está resuelta --%>
+                        <c:choose>
+                            <c:when test="${not cursoDelAnioActual}">
+                                <div class="alert alert-secondary">Este curso es de un año anterior: no se pueden agregar respuestas ni comentarios.</div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="alert alert-secondary">Esta duda está resuelta: no admite nuevas respuestas.</div>
+                            </c:otherwise>
+                        </c:choose>
                     </c:otherwise>
                 </c:choose>
 

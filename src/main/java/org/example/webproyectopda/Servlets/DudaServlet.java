@@ -18,6 +18,8 @@ import org.example.webproyectopda.Modelos.Notificacion;
 import org.example.webproyectopda.Modelos.Usuario;
 import org.example.webproyectopda.Utilidades.ConfiguracionCloudinary;
 import org.example.webproyectopda.Utilidades.ImagenCloudinary;
+import org.example.webproyectopda.DAOS.CursoDAO;
+import org.example.webproyectopda.Modelos.Curso;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -115,6 +117,10 @@ public class DudaServlet extends HttpServlet {
             if (!puedeVerCurso(usuario, duda.getCursoId())) {
                 mostrarError(request, response, "No estás inscripto en el curso de esta duda.");
                 return;
+            }
+            if (!cursoDelAnioActual(duda.getCursoId())) {
+                throw new IllegalArgumentException(
+                        "Este curso es de un año anterior: no se pueden agregar respuestas ni comentarios.");
             }
 
             Comentario respuestaComentada = null;
@@ -247,12 +253,16 @@ public class DudaServlet extends HttpServlet {
                 request.setAttribute("errorRespuesta", "La respuesta que querés comentar no existe.");
             }
         }
-        request.setAttribute("respuestaAComentar", respuestaAComentar);
+
+        boolean cursoDelAnioActual = cursoDelAnioActual(duda.getCursoId());
+        request.setAttribute("cursoDelAnioActual", cursoDelAnioActual);
+        request.setAttribute("respuestaAComentar", cursoDelAnioActual ? respuestaAComentar : null);
 
         request.setAttribute("duda", duda);
         request.setAttribute("respuestas", respuestas);
         request.setAttribute("esAutorDeLaDuda", duda.getUsuarioId() == usuario.getId());
-        request.setAttribute("puedeResponder", duda.getEstado() == EstadoDuda.Abierta);
+        request.setAttribute("puedeResponder", duda.getEstado() == EstadoDuda.Abierta && cursoDelAnioActual);
+
         boolean esAutorOAdmin = duda.getUsuarioId() == usuario.getId() || usuario.getRol() == TipoRol.Admin;
         request.setAttribute("puedeMarcarUtil", esAutorOAdmin && duda.getEstado() == EstadoDuda.Abierta);
         prepararFormulario(request);
@@ -289,6 +299,11 @@ public class DudaServlet extends HttpServlet {
         } catch (NumberFormatException e) {
         }
         return null;
+    }
+
+    private boolean cursoDelAnioActual(int cursoId) {
+        Curso curso = CursoDAO.buscarPorId(cursoId);
+        return curso != null && curso.getAnio() == LocalDate.now().getYear();
     }
 
     private boolean puedeVerCurso(Usuario usuario, int cursoId) {
