@@ -21,10 +21,12 @@ public class BajaInscripcionServlet extends HttpServlet {
 
         HttpSession sesion = request.getSession(false);
 
-        if (sesion == null || !(sesion.getAttribute("usuarioLogueado") instanceof Usuario usuario)) {
+        Object atributoUsuario = sesion == null ? null : sesion.getAttribute("usuarioLogueado");
+        if (sesion == null || !(atributoUsuario instanceof Usuario)) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+        Usuario usuario = (Usuario) atributoUsuario;
 
         try {
             int cursoId = Integer.parseInt(request.getParameter("cursoId"));

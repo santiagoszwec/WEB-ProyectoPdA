@@ -14,6 +14,7 @@
 <c:set var="enNotificaciones" value="${fn:startsWith(ruta, '/notificaciones')}" />
 <c:set var="enInscripciones" value="${fn:startsWith(ruta, '/inscripciones')}" />
 <c:set var="enGestion" value="${fn:startsWith(ruta, '/gestionPublicaciones')}" />
+<c:set var="enGestionUsuarios" value="${fn:startsWith(ruta, '/gestionUsuarios')}" />
 <%-- "Mi perfil" se abre solo cuando estás en alguna de sus páginas --%>
 <c:set var="enMiPerfil" value="${enPerfilPropio or enHoras or enNotificaciones or enInscripciones}" />
 
@@ -94,6 +95,11 @@
                 </a>
             </c:if>
             <c:if test="${sessionScope.usuarioLogueado.rol == 'Admin'}">
+                <a class="nav-link ${enGestionUsuarios ? 'active' : ''}"
+                   ${enGestionUsuarios ? 'aria-current="page"' : ''}
+                   href="${base}/gestionUsuarios">
+                    <i class="bi bi-shield-check"></i><span>Gestión de usuarios</span>
+                </a>
                 <a href="${pageContext.request.contextPath}/reportes"
                    class="nav-link">
                     <i class="bi bi-flag me-2"></i>
