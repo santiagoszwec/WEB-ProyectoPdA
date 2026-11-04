@@ -99,10 +99,10 @@ public class DudaServlet extends HttpServlet {
         }
 
         String texto = texto(request.getParameter("texto"));
-        String imagenUrl = texto(request.getParameter("imagenUrl")).strip();
-        String publicId = texto(request.getParameter("imagenPublicId")).strip();
+        String imagenUrl = texto(request.getParameter("imagenUrl")).trim();
+        String publicId = texto(request.getParameter("imagenPublicId")).trim();
         String comentarParam = request.getParameter("comentar");
-        boolean esComentario = comentarParam != null && !comentarParam.isBlank();
+        boolean esComentario = comentarParam != null && !comentarParam.trim().isEmpty();
         request.setAttribute("texto", texto);
 
         Duda duda = null;
@@ -130,7 +130,7 @@ public class DudaServlet extends HttpServlet {
 
             String queEs = esComentario ? "El comentario" : "La respuesta";
             String errorTexto = null;
-            if (texto.isBlank()) {
+            if (texto.trim().isEmpty()) {
                 errorTexto = queEs + " no puede estar vacío/a.";
             } else if (texto.length() > MAX_RESPUESTA) {
                 errorTexto = queEs + " no puede superar los " + MAX_RESPUESTA + " caracteres.";
@@ -149,7 +149,7 @@ public class DudaServlet extends HttpServlet {
             request.setAttribute("imagenPublicId", publicId);
 
             Integer padreId = esComentario ? respuestaComentada.getId() : null;
-            Comentario nuevo = new Comentario(texto.strip(),
+            Comentario nuevo = new Comentario(texto.trim(),
                     imagenUrl.isEmpty() ? null : imagenUrl,
                     LocalDate.now(), usuario.getId(), duda.getId(), padreId);
             nuevo.setImagenPublicId(publicId.isEmpty() ? null : publicId);
@@ -241,7 +241,7 @@ public class DudaServlet extends HttpServlet {
 
         Comentario respuestaAComentar = null;
         String comentarParam = request.getParameter("comentar");
-        if (comentarParam != null && !comentarParam.isBlank()) {
+        if (comentarParam != null && !comentarParam.trim().isEmpty()) {
             respuestaAComentar = buscarRespuesta(respuestas, comentarParam);
             if (respuestaAComentar == null && request.getAttribute("errorRespuesta") == null) {
                 request.setAttribute("errorRespuesta", "La respuesta que querés comentar no existe.");
@@ -280,7 +280,7 @@ public class DudaServlet extends HttpServlet {
 
     private Comentario buscarRespuesta(List<Comentario> respuestas, String idTexto) {
         try {
-            int id = Integer.parseInt(idTexto.strip());
+            int id = Integer.parseInt(idTexto.trim());
             for (Comentario respuesta : respuestas) {
                 if (respuesta.getId() == id) {
                     return respuesta;
