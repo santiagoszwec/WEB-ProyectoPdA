@@ -14,6 +14,7 @@ import java.sql.SQLException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PublicacionDAO {
@@ -546,12 +547,12 @@ public class PublicacionDAO {
 
     public static List<Publicacion> filtrarMaterialesPorTipo(String tipoMaterial, int usuarioId, int cursoId) {
         return consultarMateriales(
-                List.of(TipoMaterial.valueOf(tipoMaterial)), null, usuarioId, cursoId);
+                Collections.singletonList(TipoMaterial.valueOf(tipoMaterial)), null, usuarioId, cursoId);
     }
 
     public static List<Publicacion> filtrarMaterialesPorArchivo(String tipoArchivo, int usuarioId, int cursoId) {
         return consultarMateriales(
-                null, List.of(TipoArchivo.valueOf(tipoArchivo)), usuarioId, cursoId);
+                null, Collections.singletonList(TipoArchivo.valueOf(tipoArchivo)), usuarioId, cursoId);
     }
 
     public static List<Publicacion> filtrarMaterialesPorEtiquetas(List<TipoMaterial> tiposMaterial, List<TipoArchivo> tiposArchivo, int usuarioId, int cursoId) {
