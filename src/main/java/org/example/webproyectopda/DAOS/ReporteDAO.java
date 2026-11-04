@@ -120,8 +120,7 @@ public class ReporteDAO {
                 "LEFT JOIN publicacion p ON p.id = COALESCE(r.publicacion_id, c.publicacion_id) " +
                 "LEFT JOIN usuario u_reportante ON u_reportante.id = r.usuario_id " +
                 "LEFT JOIN usuario u_autor ON u_autor.id = COALESCE(p.usuario_id, c.usuario_id) " +
-                "WHERE r.fecha_resolucion IS NULL " +
-                "ORDER BY r.fecha_reporte";
+                "WHERE r.id = ?";
 
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
@@ -137,6 +136,7 @@ public class ReporteDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         return null;
     }
 
