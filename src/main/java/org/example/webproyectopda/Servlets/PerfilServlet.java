@@ -133,6 +133,7 @@ public class PerfilServlet extends HttpServlet {
             return;
         }
 
+        actualizado.setContrasenia(null);
         HttpSession sesion = request.getSession(false);
         sesion.setAttribute("usuarioLogueado", actualizado);
         sesion.setAttribute("mensajeExito", "Tus datos se actualizaron correctamente.");
