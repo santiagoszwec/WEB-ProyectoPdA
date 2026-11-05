@@ -48,6 +48,18 @@
             ANSALUNI
         </a>
 
+               <c:if test="${not empty sessionScope.usuarioLogueado}">
+                   <form method="get" action="${base}/inicio" role="search"
+                         class="buscador-materia d-none d-md-block flex-grow-1 mx-3">
+                       <label for="buscarMateria" class="visually-hidden">Buscar materia</label>
+                       <div class="buscador-caja">
+                           <i class="bi bi-search" aria-hidden="true"></i>
+                           <input type="search" id="buscarMateria" name="materia"
+                                  maxlength="100" placeholder="Buscar materia..."
+                                  value="<c:out value='${param.materia}'/>">
+                       </div>
+                   </form>
+               </c:if>
         <c:if test="${not empty sessionScope.usuarioLogueado}">
             <div class="ms-auto d-flex align-items-center gap-1">
 
