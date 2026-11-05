@@ -22,6 +22,7 @@
 
                 <form action="${pageContext.request.contextPath}/recuperar" method="post">
                     <input type="hidden" name="accion" value="cambiar">
+                    <input type="hidden" name="token" value="<c:out value='${tokenRecuperar}' />">
 
                     <div class="mb-3">
                         <label for="nuevaPassword" class="form-label">Contraseña nueva</label>

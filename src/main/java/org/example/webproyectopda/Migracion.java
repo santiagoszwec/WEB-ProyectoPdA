@@ -150,6 +150,15 @@ public class Migracion {
                             "  FOREIGN KEY (usuario_id) REFERENCES usuario(id)," +
                             "  FOREIGN KEY (publicacion_id) REFERENCES publicacion(id)," +
                             "  FOREIGN KEY (comentario_id) REFERENCES comentario(id) ON DELETE CASCADE" +
+                            ")",
+
+                    "CREATE TABLE IF NOT EXISTS recuperacion_contrasenia (" +
+                            "  id INT AUTO_INCREMENT PRIMARY KEY," +
+                            "  usuario_id INT NOT NULL," +
+                            "  token_hash CHAR(64) NOT NULL," +
+                            "  expira DATETIME NOT NULL," +
+                            "  usado BOOLEAN NOT NULL DEFAULT FALSE," +
+                            "  FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE" +
                             ")"
             };
 
