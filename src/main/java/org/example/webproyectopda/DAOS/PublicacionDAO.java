@@ -673,36 +673,121 @@ public class PublicacionDAO {
     }
 
     // Todas las publicaciones (activas y dadas de baja) para la gestión del administrador.
-    public static List<PublicacionFeed> listarTodas() {
+    public static List<PublicacionFeed> listarTodas(
+            int limite, int offset, String busqueda, String estado, String tipo) {
+
         List<PublicacionFeed> retorno = new ArrayList<>();
 
-        String sql = "SELECT p.id, p.usuario_id, p.mensaje, p.titulo, p.imagen_url, "
-                + "p.fecha_publicacion, p.fecha_limite, p.activa, "
-                + "c.nombre AS curso, u.nombre AS autor, " +
-                "CASE WHEN d.id IS NOT NULL THEN 'Duda' " +
-                "     WHEN m.id IS NOT NULL THEN 'Mensaje' " +
-                "     WHEN ma.id IS NOT NULL THEN 'Material' " +
-                "     ELSE 'Publicación' END AS tipo, " +
-                "COALESCE(d.categoria, m.categoria) AS categoria, d.estado AS estado " +
-                "FROM publicacion p " +
-                "LEFT JOIN curso c ON c.id = p.curso_id " +
-                "LEFT JOIN usuario u ON u.id = p.usuario_id " +
-                "LEFT JOIN duda d ON d.id = p.id " +
-                "LEFT JOIN mensaje m ON m.id = p.id " +
-                "LEFT JOIN material ma ON ma.id = p.id " +
-                "ORDER BY p.fecha_publicacion DESC, p.id DESC";
+        StringBuilder sql = new StringBuilder("SELECT p.id, p.usuario_id, p.mensaje, p.titulo, p.imagen_url, "
+                        + "p.fecha_publicacion, p.fecha_limite, p.activa, "
+                        + "c.nombre AS curso, u.nombre AS autor, "
+                        + "CASE WHEN d.id IS NOT NULL THEN 'Duda' "
+                        + "     WHEN m.id IS NOT NULL THEN 'Mensaje' "
+                        + "     WHEN ma.id IS NOT NULL THEN 'Material' "
+                        + "     ELSE 'Publicación' END AS tipo, "
+                        + "COALESCE(d.categoria, m.categoria) AS categoria, "
+                        + "d.estado AS estado "
+                        + "FROM publicacion p "
+                        + "LEFT JOIN curso c ON c.id = p.curso_id "
+                        + "LEFT JOIN usuario u ON u.id = p.usuario_id "
+                        + "LEFT JOIN duda d ON d.id = p.id "
+                        + "LEFT JOIN mensaje m ON m.id = p.id "
+                        + "LEFT JOIN material ma ON ma.id = p.id ");
+
+        List<String> parametros = new ArrayList<>();
+
+        agregarFiltros(sql, parametros, busqueda, estado, tipo);
+
+        sql.append("ORDER BY p.fecha_publicacion DESC, p.id DESC ");
+        sql.append("LIMIT ? OFFSET ?");
 
         try (Connection conexion = ConexionDB.obtenerConexion();
-             PreparedStatement sentencia = conexion.prepareStatement(sql);
-             ResultSet filas = sentencia.executeQuery()) {
+             PreparedStatement sentencia = conexion.prepareStatement(sql.toString())) {
 
-            while (filas.next()) {
-                retorno.add(convertirFeed(filas));
+            int posicion = 1;
+
+            for (String parametro : parametros) {
+                sentencia.setString(posicion++, parametro);
             }
+
+            sentencia.setInt(posicion++, limite);
+            sentencia.setInt(posicion, offset);
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                while (filas.next()) {
+                    retorno.add(convertirFeed(filas));
+                }
+            }
+
             return retorno;
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+
+    public static int contarTodas(String busqueda, String estado, String tipo) {
+
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM publicacion p "
+                        + "LEFT JOIN curso c ON c.id = p.curso_id "
+                        + "LEFT JOIN usuario u ON u.id = p.usuario_id "
+                        + "LEFT JOIN duda d ON d.id = p.id "
+                        + "LEFT JOIN mensaje m ON m.id = p.id "
+                        + "LEFT JOIN material ma ON ma.id = p.id ");
+
+        List<String> parametros = new ArrayList<>();
+        agregarFiltros(sql, parametros, busqueda, estado, tipo);
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < parametros.size(); i++) {
+                sentencia.setString(i + 1, parametros.get(i));
+            }
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                if (filas.next()) {
+                    return filas.getInt(1);
+                }
+            }
+            return 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private static void agregarFiltros(StringBuilder sql, List<String> parametros, String busqueda, String estado, String tipo) {
+
+        sql.append("WHERE 1 = 1 ");
+
+        if (busqueda != null && !busqueda.trim().isEmpty()) {
+            sql.append("AND (")
+                    .append("LOWER(COALESCE(p.mensaje, '')) LIKE ? ")
+                    .append("OR LOWER(COALESCE(u.nombre, '')) LIKE ? ")
+                    .append("OR LOWER(COALESCE(c.nombre, '')) LIKE ?")
+                    .append(") ");
+
+            String texto = "%" + busqueda.trim().toLowerCase() + "%";
+
+            parametros.add(texto);
+            parametros.add(texto);
+            parametros.add(texto);
+        }
+
+        if ("activas".equals(estado)) {
+            sql.append("AND p.activa = TRUE ");
+        } else if ("inactivas".equals(estado)) {
+            sql.append("AND p.activa = FALSE ");
+        }
+
+        if ("Duda".equals(tipo)) {
+            sql.append("AND d.id IS NOT NULL ");
+        } else if ("Mensaje".equals(tipo)) {
+            sql.append("AND m.id IS NOT NULL ");
+        } else if ("Material".equals(tipo)) {
+            sql.append("AND ma.id IS NOT NULL ");
         }
     }
 

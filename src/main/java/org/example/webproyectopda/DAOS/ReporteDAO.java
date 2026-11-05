@@ -65,6 +65,60 @@ public class ReporteDAO {
                 "ORDER BY r.fecha_reporte";
         return listarConSql(sql);
     }
+    public static List<Reporte> listarReportesAbiertos(int limite, int offset) {
+        String sql = "SELECT r.*, " +
+                "p.titulo AS titulo_publicacion, " +
+                "p.mensaje AS mensaje_publicacion, " +
+                "c.mensaje AS mensaje_comentario, " +
+                "u_reportante.nombre AS nombre_reportante, " +
+                "u_autor.nombre AS nombre_autor " +
+                "FROM reporte r " +
+                "LEFT JOIN comentario c ON r.comentario_id = c.id " +
+                "LEFT JOIN publicacion p ON p.id = COALESCE(r.publicacion_id, c.publicacion_id) " +
+                "LEFT JOIN usuario u_reportante ON u_reportante.id = r.usuario_id " +
+                "LEFT JOIN usuario u_autor ON u_autor.id = COALESCE(p.usuario_id, c.usuario_id) " +
+                "WHERE r.fecha_resolucion IS NULL " +
+                "ORDER BY r.fecha_reporte, r.id " +
+                "LIMIT ? OFFSET ?";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+
+            sentencia.setInt(1, limite);
+            sentencia.setInt(2, offset);
+
+            List<Reporte> retorno = new ArrayList<>();
+
+            try (ResultSet filas = sentencia.executeQuery()) {
+                while (filas.next()) {
+                    retorno.add(mapearReporte(filas));
+                }
+            }
+
+            return retorno;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static int contarReportesAbiertos() {
+        String sql = "SELECT COUNT(*) FROM reporte WHERE fecha_resolucion IS NULL";
+
+        try (Connection conexion = ConexionDB.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(sql);
+             ResultSet filas = sentencia.executeQuery()) {
+
+            if (filas.next()) {
+                return filas.getInt(1);
+            }
+
+            return 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static List<Reporte> listarReportesPublicacionesAbiertos() {
         String sql = "SELECT r.*, p.titulo AS titulo_publicacion, " +
