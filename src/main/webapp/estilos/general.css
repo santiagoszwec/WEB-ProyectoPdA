@@ -411,3 +411,54 @@ aside.sidebar-ansaluni.sidebar-mini {
     --bs-card-bg: #f1f8fd;
     --bs-card-border-color: #cfe2f1;
 }
+/* Buscador de materias en la barra superior */
+.buscador-materia {
+    position: relative;
+    max-width: 480px;
+}
+
+.buscador-caja {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .12);
+    color: rgba(255, 255, 255, .8);
+    transition: background-color .15s ease;
+}
+
+.buscador-caja:hover {
+    background: rgba(255, 255, 255, .18);
+}
+
+.buscador-caja:focus-within {
+    background: rgba(255, 255, 255, .2);
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.buscador-caja input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #fff;
+}
+
+.buscador-caja input::placeholder {
+    color: rgba(255, 255, 255, .7);
+}
+
+.buscador-caja input::-webkit-search-cancel-button {
+    filter: grayscale(1) brightness(3);
+    cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .buscador-caja {
+        transition: none;
+    }
+}

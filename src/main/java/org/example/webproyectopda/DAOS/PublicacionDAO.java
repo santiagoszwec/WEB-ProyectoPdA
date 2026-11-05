@@ -276,8 +276,9 @@ public class PublicacionDAO {
         }
     }
 
-    public static List<PublicacionFeed> listarUltimas(int usuarioId) {
+    public static List<PublicacionFeed> listarUltimas(int usuarioId, String materia) {
         List<PublicacionFeed> retorno = new ArrayList<>();
+        boolean buscando = materia != null && !materia.trim().isEmpty();
 
         String sql = "SELECT p.id, p.mensaje, p.titulo, p.imagen_url, " +
                 "p.fecha_publicacion, p.fecha_limite, " +
@@ -297,13 +298,17 @@ public class PublicacionDAO {
                 "LEFT JOIN material ma ON ma.id = p.id " +
                 "WHERE i.usuario_id = ? " +
                 "AND p.activa = TRUE AND c.activo = TRUE " +
+                (buscando ? "AND LOWER(c.nombre) LIKE ? " : "") +
                 "ORDER BY p.fecha_publicacion DESC, p.id DESC " +
-                "LIMIT 10";
+                "LIMIT " + (buscando ? 30 : 10);
 
         try (Connection conexion = ConexionDB.obtenerConexion();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
 
             sentencia.setInt(1, usuarioId);
+            if (buscando) {
+                sentencia.setString(2, "%" + materia.trim().toLowerCase() + "%");
+            }
 
             try (ResultSet filas = sentencia.executeQuery()) {
                 while (filas.next()) {
@@ -468,7 +473,7 @@ public class PublicacionDAO {
                 "WHERE p.activa = TRUE AND i.usuario_id = ? AND p.curso_id = ? ORDER BY p.fecha_publicacion";
 
         try (Connection conexion = ConexionDB.obtenerConexion();
-            PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+             PreparedStatement sentencia = conexion.prepareStatement(sql)) {
             sentencia.setInt(1, usuarioId);
             sentencia.setInt(2, cursoId);
             ResultSet filas = sentencia.executeQuery();
@@ -679,20 +684,20 @@ public class PublicacionDAO {
         List<PublicacionFeed> retorno = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder("SELECT p.id, p.usuario_id, p.mensaje, p.titulo, p.imagen_url, "
-                        + "p.fecha_publicacion, p.fecha_limite, p.activa, "
-                        + "c.nombre AS curso, u.nombre AS autor, "
-                        + "CASE WHEN d.id IS NOT NULL THEN 'Duda' "
-                        + "     WHEN m.id IS NOT NULL THEN 'Mensaje' "
-                        + "     WHEN ma.id IS NOT NULL THEN 'Material' "
-                        + "     ELSE 'Publicación' END AS tipo, "
-                        + "COALESCE(d.categoria, m.categoria) AS categoria, "
-                        + "d.estado AS estado "
-                        + "FROM publicacion p "
-                        + "LEFT JOIN curso c ON c.id = p.curso_id "
-                        + "LEFT JOIN usuario u ON u.id = p.usuario_id "
-                        + "LEFT JOIN duda d ON d.id = p.id "
-                        + "LEFT JOIN mensaje m ON m.id = p.id "
-                        + "LEFT JOIN material ma ON ma.id = p.id ");
+                + "p.fecha_publicacion, p.fecha_limite, p.activa, p.curso_id, "
+                + "c.nombre AS curso, u.nombre AS autor, "
+                + "CASE WHEN d.id IS NOT NULL THEN 'Duda' "
+                + "     WHEN m.id IS NOT NULL THEN 'Mensaje' "
+                + "     WHEN ma.id IS NOT NULL THEN 'Material' "
+                + "     ELSE 'Publicación' END AS tipo, "
+                + "COALESCE(d.categoria, m.categoria) AS categoria, "
+                + "d.estado AS estado "
+                + "FROM publicacion p "
+                + "LEFT JOIN curso c ON c.id = p.curso_id "
+                + "LEFT JOIN usuario u ON u.id = p.usuario_id "
+                + "LEFT JOIN duda d ON d.id = p.id "
+                + "LEFT JOIN mensaje m ON m.id = p.id "
+                + "LEFT JOIN material ma ON ma.id = p.id ");
 
         List<String> parametros = new ArrayList<>();
 
@@ -715,7 +720,9 @@ public class PublicacionDAO {
 
             try (ResultSet filas = sentencia.executeQuery()) {
                 while (filas.next()) {
-                    retorno.add(convertirFeed(filas));
+                    PublicacionFeed publicacion = convertirFeed(filas);
+                    publicacion.setCursoId(filas.getInt("curso_id"));
+                    retorno.add(publicacion);
                 }
             }
 
@@ -730,11 +737,11 @@ public class PublicacionDAO {
     public static int contarTodas(String busqueda, String estado, String tipo) {
 
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM publicacion p "
-                        + "LEFT JOIN curso c ON c.id = p.curso_id "
-                        + "LEFT JOIN usuario u ON u.id = p.usuario_id "
-                        + "LEFT JOIN duda d ON d.id = p.id "
-                        + "LEFT JOIN mensaje m ON m.id = p.id "
-                        + "LEFT JOIN material ma ON ma.id = p.id ");
+                + "LEFT JOIN curso c ON c.id = p.curso_id "
+                + "LEFT JOIN usuario u ON u.id = p.usuario_id "
+                + "LEFT JOIN duda d ON d.id = p.id "
+                + "LEFT JOIN mensaje m ON m.id = p.id "
+                + "LEFT JOIN material ma ON ma.id = p.id ");
 
         List<String> parametros = new ArrayList<>();
         agregarFiltros(sql, parametros, busqueda, estado, tipo);
@@ -892,4 +899,3 @@ public class PublicacionDAO {
     }
 
 }
-

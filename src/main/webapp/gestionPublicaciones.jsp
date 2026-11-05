@@ -157,7 +157,7 @@
                                         <th scope="col" class="fw-semibold">Mensaje</th>
                                         <th scope="col" class="fw-semibold">Fecha</th>
                                         <th scope="col" class="fw-semibold text-center">Estado</th>
-                                        <th scope="col" class="fw-semibold text-center">Acción</th>
+                                        <th scope="col" class="fw-semibold text-center">Acciones</th>
                                     </tr>
                                     </thead>
 
@@ -202,28 +202,48 @@
                                             </td>
 
                                             <td class="text-center">
-                                                <form action="${pageContext.request.contextPath}/gestionPublicaciones"
-                                                      method="post"
-                                                      onsubmit="return confirm('¿Estás seguro de que querés eliminar esta publicación?');">
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    <c:if test="${publicacion.activa}">
+                                                        <c:choose>
+                                                            <c:when test="${publicacion.tipo == 'Duda'}">
+                                                                <a href="${pageContext.request.contextPath}/duda?id=${publicacion.id}"
+                                                                   class="btn btn-outline-primary btn-sm">Ver</a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <a href="${pageContext.request.contextPath}/curso?id=${publicacion.cursoId}#publicacion-${publicacion.id}"
+                                                                   class="btn btn-outline-primary btn-sm">Ver</a>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                        <a href="${pageContext.request.contextPath}/publicacion/editar?id=${publicacion.id}"
+                                                           class="btn btn-outline-secondary btn-sm">Editar</a>
+                                                    </c:if>
 
-                                                    <input type="hidden" name="publicacionId"
-                                                           value="${publicacion.id}">
+                                                    <form action="${pageContext.request.contextPath}/gestionPublicaciones"
+                                                          method="post"
+                                                          onsubmit="return confirm('¿Estás seguro de que querés eliminar esta publicación?');">
 
-                                                    <input type="hidden" name="busqueda"
-                                                           value="<c:out value='${busqueda}'/>">
+                                                        <input type="hidden" name="publicacionId"
+                                                               value="${publicacion.id}">
 
-                                                    <input type="hidden" name="estado"
-                                                           value="${estadoSeleccionado}">
+                                                        <input type="hidden" name="busqueda"
+                                                               value="<c:out value='${busqueda}'/>">
 
-                                                    <input type="hidden" name="tipo"
-                                                           value="${tipoSeleccionado}">
+                                                        <input type="hidden" name="estado"
+                                                               value="${estadoSeleccionado}">
 
-                                                    <button type="submit"
-                                                            class="btn btn-outline-danger btn-sm"
-                                                        ${not publicacion.activa ? 'disabled' : ''}>
-                                                        Eliminar
-                                                    </button>
-                                                </form>
+                                                        <input type="hidden" name="tipo"
+                                                               value="${tipoSeleccionado}">
+
+                                                        <input type="hidden" name="pagina"
+                                                               value="${paginaActual}">
+
+                                                        <button type="submit"
+                                                                class="btn btn-outline-danger btn-sm"
+                                                            ${not publicacion.activa ? 'disabled' : ''}>
+                                                            Eliminar
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     </c:forEach>

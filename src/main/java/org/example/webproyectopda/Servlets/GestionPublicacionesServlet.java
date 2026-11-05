@@ -141,6 +141,7 @@ public class GestionPublicacionesServlet extends HttpServlet {
         String busqueda = request.getParameter("busqueda");
         String estado = request.getParameter("estado");
         String tipo = request.getParameter("tipo");
+        String pagina = request.getParameter("pagina");
 
         String url = request.getContextPath() + "/gestionPublicaciones"
                 + "?busqueda=" + URLEncoder.encode(
@@ -148,7 +149,9 @@ public class GestionPublicacionesServlet extends HttpServlet {
                 + "&estado=" + URLEncoder.encode(
                 estado == null ? "" : estado, "UTF-8")
                 + "&tipo=" + URLEncoder.encode(
-                tipo == null ? "" : tipo, "UTF-8");
+                tipo == null ? "" : tipo, "UTF-8")
+                + "&pagina=" + URLEncoder.encode(
+                pagina == null ? "1" : pagina, "UTF-8");
 
         response.sendRedirect(url);
     }
