@@ -462,3 +462,70 @@ aside.sidebar-ansaluni.sidebar-mini {
         transition: none;
     }
 }
+
+/* ★ NUEVO: tarjeta de publicación (layout/publicacion.jsp, duda.jsp y material en curso.jsp) */
+.pub-card {
+    --bs-card-bg: #f9fcfe;
+    --bs-card-border-color: #e1edf7;
+    --bs-card-border-radius: 16px;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    transition: background-color .15s, border-color .15s, box-shadow .15s;
+}
+.pub-card:hover {
+    --bs-card-bg: #f1f8fd;
+    --bs-card-border-color: #cfe2f1;
+    box-shadow: 0 4px 14px rgba(20, 60, 100, .07);
+}
+.pub-sep { border: 0; border-top: 1px solid #dfeaf3; margin: 0; opacity: 1; }
+.pub-chip { padding: .4em .8em; }
+.pub-chip-cat { background: #f0f1f3; color: #1c1f24; }
+.pub-adjunto { border: 1px solid #dbe7f1; border-radius: 12px; background: #fff; }
+.pub-btn { padding: .45rem 1rem; }
+.pub-btn-claro { background: #fff; border: 1px solid #d6e3ee; color: #1c1f24; }
+.pub-btn-claro:hover { background: #f1f8fd; border-color: #c4d8e8; color: #1c1f24; }
+.pub-btn-reportar { background: #fff; border: 1px solid #d6e3ee; color: #dc3545; }
+.pub-btn-reportar:hover { background: #fdf3f4; border-color: #f0c4c9; color: #dc3545; }
+.pub-btn-util { background: #fff; border: 1px solid #bfe3cd; color: #146c43; }
+.pub-btn-util:hover { background: #eef9f2; border-color: #a3d6b8; color: #146c43; }
+
+/* Tarjetas celestes del inicio (Mi estudio y Mis cursos) */
+.card-celeste {
+    background-color: #f7fbfe !important;
+    border: 1px solid #e9f1f8 !important;
+}
+.card-celeste .list-group-item {
+    background: transparent;
+}
+.card-celeste .list-group-item:hover {
+    background: #eaf4fb;
+}
+
+/* Filtro de material: selector de botones y tarjeta desplegable */
+.seg {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 999px;
+    background: #e9eef3;
+}
+.seg label {
+    margin: 0;
+    padding: 0 .85rem;
+    line-height: 1.55;
+    font-size: .9rem;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #4a5560;
+    cursor: pointer;
+}
+.seg label:hover { color: #0B1F3A; }
+.seg .btn-check:checked + label {
+    background: #fff;
+    color: #0B1F3A;
+    box-shadow: 0 1px 4px rgba(11, 31, 58, .15);
+}
+.seg .btn-check:focus-visible + label {
+    outline: 2px solid #0B1F3A;
+    outline-offset: 2px;
+}
+.filtro-flecha { transition: transform .2s; }
+.filtro-toggle[aria-expanded="true"] .filtro-flecha { transform: rotate(180deg); }

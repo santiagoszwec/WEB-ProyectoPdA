@@ -123,7 +123,7 @@ public class CursoServlet extends HttpServlet {
 
             String archivoUrl = request.getParameter("archivoUrl");
             String tipoMaterialTexto = request.getParameter("tipoMaterial");
-            String tipoArchivoTexto = request.getParameter("tipoArchivo");
+            String tipoArchivoTexto = convertirTipoArchivo(request.getParameter("tipoArchivo"), archivoUrl);
             String tema = request.getParameter("tema");
 
             List<String> errores = validar(usuario, mensaje, tipo,
@@ -356,7 +356,7 @@ public class CursoServlet extends HttpServlet {
                 errores.add("Seleccioná un tipo de material válido: Apuntes, Ejercicio, Libro o Video.");
             }
             if (!esEnumValido(TipoArchivo.class, tipoArchivo)) {
-                errores.add("Seleccioná un tipo de archivo válido: JPG, PDF o PNG.");
+                errores.add("Seleccioná un tipo de archivo válido: Documento o Imagen.");
             }
 
             if (tema == null || tema.trim().isEmpty()) {
@@ -373,6 +373,28 @@ public class CursoServlet extends HttpServlet {
 
         return errores;
     }
+
+    // "Documento" -> PDF. "Imagen" -> PNG si la URL termina en .png, si no JPG.
+    // Si llega otro valor (por ejemplo PDF) se deja tal cual y lo valida esEnumValido.
+    private String convertirTipoArchivo(String valor, String archivoUrl) {
+        if (valor == null) {
+            return "";
+        }
+        String v = valor.trim();
+        if (v.equalsIgnoreCase("Documento")) {
+            return "PDF";
+        }
+        if (v.equalsIgnoreCase("Imagen")) {
+            String ruta = archivoUrl == null ? "" : archivoUrl.trim().toLowerCase();
+            int corte = ruta.indexOf('?');
+            if (corte >= 0) {
+                ruta = ruta.substring(0, corte);
+            }
+            return ruta.endsWith(".png") ? "PNG" : "JPG";
+        }
+        return v;
+    }
+
 
     private <E extends Enum<E>> boolean esEnumValido(Class<E> tipoEnum, String valor) {
         return Validaciones.enumValido(tipoEnum, valor);
@@ -442,11 +464,22 @@ public class CursoServlet extends HttpServlet {
     }
 
     // Sección "Material de Estudio": lista filtrada por las etiquetas elegidas en el request.
+    // Sección "Material de Estudio": lista filtrada por las etiquetas elegidas en el request.
     private void cargarMateriales(HttpServletRequest request, Usuario usuario, Curso curso) {
         List<TipoMaterial> tiposMaterial =
                 parsearEnums(request.getParameterValues("tipoMaterial"), TipoMaterial.class);
-        List<TipoArchivo> tiposArchivo =
-                parsearEnums(request.getParameterValues("tipoArchivo"), TipoArchivo.class);
+
+        // El filtro de archivo es "documento" o "imagen"; acá se traduce a los formatos reales.
+        String grupoArchivo = texto(request.getParameter("tipoArchivo")).trim().toLowerCase();
+        List<TipoArchivo> tiposArchivo = new ArrayList<>();
+        if ("documento".equals(grupoArchivo)) {
+            tiposArchivo.add(TipoArchivo.PDF);
+        } else if ("imagen".equals(grupoArchivo)) {
+            tiposArchivo.add(TipoArchivo.JPG);
+            tiposArchivo.add(TipoArchivo.PNG);
+        } else {
+            grupoArchivo = "";
+        }
 
         List<Publicacion> materiales;
         if (usuario.getRol() == TipoRol.Admin || !esDelAnioActual(curso)) {
@@ -460,6 +493,7 @@ public class CursoServlet extends HttpServlet {
         request.setAttribute("materiales", materiales);
         request.setAttribute("filtroTipoMaterial", tiposMaterial);
         request.setAttribute("filtroTipoArchivo", tiposArchivo);
+        request.setAttribute("grupoArchivoFiltro", grupoArchivo);
         request.setAttribute("tiposMaterialDisponibles", TipoMaterial.values());
         request.setAttribute("tiposArchivoDisponibles", TipoArchivo.values());
     }
@@ -496,5 +530,7 @@ public class CursoServlet extends HttpServlet {
         }
         return (Usuario) sesion.getAttribute("usuarioLogueado");
     }
+
+
 
 }

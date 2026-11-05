@@ -2,10 +2,10 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%--
-    Tarjeta de publicación (estilo Reddit, solo Bootstrap). Se usa en toda la web.
+    Tarjeta de publicación (solo Bootstrap + estilos .pub-card de general.css). Se usa en toda la web.
     Uso:  <c:set var="pub" value="${publicacion}" scope="request"/>
           <jsp:include page="/layout/publicacion.jsp"/>
-    Opcionales (request): pubOcultarCurso="true"  -> dentro de un curso (muestra al autor en vez del curso)
+    Opcionales (request): pubOcultarCurso="true"  -> dentro de un curso (muestra al autor en vez de la materia)
                           pubGestion="true"       -> habilita Reportar / Editar / Eliminar (solo curso.jsp)
 --%>
 <c:set var="pubEsDuda" value="${pub.tipo eq 'Duda'}"/>
@@ -17,18 +17,40 @@
 <c:set var="pubEsMia" value="${pubGestion eq 'true' and pub.usuarioId == sessionScope.usuarioLogueado.id}"/>
 <c:set var="pubReportar" value="${pubGestion eq 'true' and puedeReportar}"/>
 <c:set var="pubVerCurso" value="${pubTieneCurso and not pubOcultar}"/>
-<c:set var="pubHayAcciones" value="${pubEsDuda or pubVerCurso or pubReportar or pubEsMia}"/>
 
+<%-- Avatar (iniciales y color, como antes) --%>
 <c:set var="pubPartes" value="${fn:split(pubNombre, ' ')}"/>
 <c:set var="pubIniciales"
        value="${fn:toUpperCase(fn:substring(pubPartes[0], 0, 1))}${fn:length(pubPartes) > 1 ? fn:toUpperCase(fn:substring(pubPartes[fn:length(pubPartes) - 1], 0, 1)) : ''}"/>
 <c:set var="pubColores" value="${['text-bg-primary', 'text-bg-success', 'text-bg-danger', 'text-bg-dark', 'text-bg-secondary']}"/>
 <c:set var="pubColor" value="${pubColores[fn:length(pubNombre) % 5]}"/>
 
+<%-- ★ NUEVO: fechas en texto ("19 de octubre de 2026" y "20/10/2026") --%>
+<c:set var="pubMeses" value="${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']}"/>
+<c:if test="${not empty pub.fechaPublicacion}">
+    <c:set var="pubF" value="${fn:split(pub.fechaPublicacion, '-')}"/>
+    <c:set var="pubFechaTexto" value="${pubF[2] + 0} de ${pubMeses[pubF[1] - 1]} de ${pubF[0]}"/>
+</c:if>
+<c:if test="${not empty pub.fechaLimite}">
+    <c:set var="pubL" value="${fn:split(pub.fechaLimite, '-')}"/>
+    <c:set var="pubLimiteTexto" value="${pubL[2]}/${pubL[1]}/${pubL[0]}"/>
+</c:if>
+
+<%-- ★ NUEVO: adjunto (PDF con nombre de archivo, o imagen) --%>
+<c:set var="pubTieneAdjunto" value="${not empty pub.imagenUrl}"/>
+<c:set var="pubEsPdf" value="${pubTieneAdjunto and fn:endsWith(fn:toLowerCase(fn:substringBefore(pub.imagenUrl, '?')), '.pdf')}"/>
+<c:if test="${pubEsPdf}">
+    <c:set var="pubRutaPartes" value="${fn:split(fn:substringBefore(pub.imagenUrl, '?'), '/')}"/>
+    <c:set var="pubArchivo" value="${pubRutaPartes[fn:length(pubRutaPartes) - 1]}"/>
+</c:if>
+
 <c:set var="pubDestino"
        value="${pageContext.request.contextPath}${pubEsDuda ? '/duda?id=' : '/curso?id='}${pubEsDuda ? pub.id : pub.cursoId}"/>
+<c:set var="pubHayMenu" value="${pubEsDuda or pubVerCurso}"/>
+<c:set var="pubHayPie" value="${pubEsDuda or not empty pub.fechaLimite}"/>
+<c:set var="pubHayBotones" value="${pubEsDuda or pubVerCurso or pubEsPdf or pubReportar or pubEsMia}"/>
 
-<article class="card pub-reddit position-relative mb-3" id="publicacion-${pub.id}">
+<article class="card pub-card position-relative mb-3" id="publicacion-${pub.id}">
     <%-- Toda la tarjeta es clickeable (si hay a dónde ir) --%>
     <c:if test="${pubEsDuda or pubVerCurso}">
         <a href="${pubDestino}" class="stretched-link"
@@ -37,23 +59,26 @@
 
     <div class="card-body d-flex flex-column gap-2">
 
-        <%-- Cabecera: avatar, curso/autor, fecha y menú --%>
+        <%-- Cabecera: avatar, nombre, fecha, estado y menú --%>
         <div class="d-flex align-items-center gap-2">
             <span class="rounded-circle d-flex align-items-center justify-content-center fw-bold small flex-shrink-0 ${pubColor}"
                   style="width:32px;height:32px;"><c:out value="${pubIniciales}"/></span>
 
             <div class="flex-grow-1" style="min-width:0;">
-                <div class="small">
-                    <span class="fw-bold"><c:out value="${pubNombre}"/></span>
-                    <span class="text-body-secondary">• <c:out value="${pub.fechaPublicacion}"/></span>
+                <div class="fw-bold text-truncate" style="font-size:.95rem; line-height:1.25;"><c:out value="${pubNombre}"/></div>
+                <div class="text-body-secondary" style="font-size:.8rem; line-height:1.3;">
+                    <c:if test="${not pubOcultar}"><c:out value="${pubAutor}"/> · </c:if>Publicado el <c:out value="${pubFechaTexto}"/>
                 </div>
-                <c:if test="${not pubOcultar}">
-                    <div class="small text-body-secondary"><c:out value="${pubAutor}"/></div>
-                </c:if>
             </div>
 
-            <%-- Menú "···": solo accesos de navegación --%>
-            <c:if test="${pubEsDuda or pubVerCurso}">
+            <c:if test="${pubEsDuda and not empty pub.estado}">
+                <span class="badge rounded-pill flex-shrink-0 fw-semibold ${pub.estado eq 'Abierta' ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis'}">
+                    <c:out value="${pub.estado}"/>
+                </span>
+            </c:if>
+
+            <%-- Menú "···": accesos de navegación --%>
+            <c:if test="${pubHayMenu}">
                 <div class="dropdown position-relative z-1">
                     <button type="button" class="btn btn-sm btn-link text-secondary rounded-circle p-1"
                             data-bs-toggle="dropdown" aria-expanded="false" aria-label="Más opciones">
@@ -70,7 +95,7 @@
                         <c:if test="${pubEsDuda}">
                             <li>
                                 <a class="dropdown-item" href="${pageContext.request.contextPath}/duda?id=${pub.id}">
-                                    <i class="bi bi-chat-left-text me-2"></i>${pub.estado eq 'Abierta' ? 'Ver duda y responder' : 'Ver duda'}
+                                    <i class="bi bi-chat-left-text me-2"></i>${pub.estado eq 'Abierta' ? 'Ver y responder' : 'Ver duda'}
                                 </a>
                             </li>
                         </c:if>
@@ -79,72 +104,93 @@
             </c:if>
         </div>
 
-        <%-- Título --%>
-        <c:if test="${not empty pub.titulo}">
-            <h3 class="h6 fw-semibold mb-0"><c:out value="${pub.titulo}"/></h3>
-        </c:if>
+        <hr class="pub-sep">
 
-        <%-- Etiquetas --%>
+        <%-- Título y mensaje --%>
+        <div>
+            <c:if test="${not empty pub.titulo}">
+                <h3 class="fw-bold mb-1" style="font-size:1.05rem; line-height:1.3;"><c:out value="${pub.titulo}"/></h3>
+            </c:if>
+            <p class="mb-0 text-body-secondary" style="font-size:.875rem; line-height:1.55; white-space:pre-line;"><c:out value="${pub.mensaje}"/></p>
+        </div>
+
+        <%-- Etiquetas: tipo y categoría --%>
         <div class="d-flex flex-wrap gap-1">
-            <span class="badge rounded-pill ${pub.tipo eq 'Duda' ? 'bg-warning-subtle text-warning-emphasis' : (pub.tipo eq 'Material' ? 'bg-success-subtle text-success-emphasis' : 'bg-primary-subtle text-primary-emphasis')}">
+            <span class="badge rounded-pill fw-semibold pub-chip ${pub.tipo eq 'Duda' ? 'bg-primary-subtle text-primary' : (pub.tipo eq 'Material' ? 'bg-success-subtle text-success-emphasis' : 'bg-info-subtle text-info-emphasis')}">
                 <c:out value="${pub.tipo}"/>
             </span>
             <c:if test="${not empty pub.categoria}">
-                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">
+                <span class="badge rounded-pill fw-medium pub-chip pub-chip-cat">
                     <c:out value="${pub.categoria eq 'Reunion' ? 'Reunión' : pub.categoria}"/>
-                </span>
-            </c:if>
-            <c:if test="${pubEsDuda}">
-                <span class="badge rounded-pill ${pub.estado eq 'Abierta' ? 'bg-warning-subtle text-warning-emphasis' : 'bg-success-subtle text-success-emphasis'}">
-                    <c:out value="${pub.estado}"/>
-                </span>
-            </c:if>
-            <c:if test="${not empty pub.fechaLimite}">
-                <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis">
-                    <i class="bi bi-calendar-event"></i> Límite: <c:out value="${pub.fechaLimite}"/>
                 </span>
             </c:if>
         </div>
 
-        <%-- Mensaje --%>
-        <p class="small mb-0" style="line-height:1.6; white-space:pre-line;"><c:out value="${pub.mensaje}"/></p>
+        <%-- Imagen --%>
+        <c:if test="${pubTieneAdjunto and not pubEsPdf}">
+            <img src="<c:out value='${pub.imagenUrl}'/>" alt="Imagen de la publicación"
+                 class="img-fluid rounded-3 border align-self-start" style="max-height:350px;">
+        </c:if>
 
-        <%-- Imagen o PDF --%>
-        <c:choose>
-            <c:when test="${fn:endsWith(fn:toLowerCase(pub.imagenUrl), '.pdf')}">
-                <div>
-                    <a href="<c:out value='${pub.imagenUrl}'/>" target="_blank" rel="noopener"
-                       class="btn btn-sm bg-body-secondary rounded-pill border-0 fw-semibold position-relative z-1">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF
-                    </a>
+        <%-- PDF --%>
+        <c:if test="${pubEsPdf}">
+            <div class="pub-adjunto p-2 d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-pdf-fill text-danger flex-shrink-0 text-center" style="width:32px; font-size:1.6rem;"></i>
+                <div class="flex-grow-1" style="min-width:0;">
+                    <div class="fw-semibold text-truncate" style="font-size:.9rem;"><c:out value="${pubArchivo}"/></div>
+                    <div class="text-body-secondary" style="font-size:.78rem;">Documento adjunto · PDF</div>
                 </div>
-            </c:when>
-            <c:when test="${not empty pub.imagenUrl}">
-                <img src="<c:out value='${pub.imagenUrl}'/>" alt="Imagen de la publicación"
-                     class="img-fluid rounded-3 border align-self-start" style="max-height:350px;">
-            </c:when>
-        </c:choose>
+                <a href="<c:out value='${pub.imagenUrl}'/>" target="_blank" rel="noopener" download
+                   class="text-secondary fs-5 p-1 position-relative z-1" title="Descargar" aria-label="Descargar adjunto">
+                    <i class="bi bi-download"></i>
+                </a>
+            </div>
+        </c:if>
 
-        <%-- Acciones (todas visibles, como antes) --%>
-        <c:if test="${pubHayAcciones}">
+        <%-- Pie: respuestas (dudas) y fecha límite --%>
+        <c:if test="${pubHayPie}">
+            <div class="d-flex justify-content-between align-items-center text-body-secondary" style="font-size:.8rem;">
+                <span>
+                    <c:if test="${pubEsDuda}">
+                        <i class="bi bi-chat-left me-1"></i>${pub.respuestas} ${pub.respuestas == 1 ? 'respuesta' : 'respuestas'}
+                    </c:if>
+                </span>
+                <c:if test="${not empty pubLimiteTexto}">
+                    <span><i class="bi bi-calendar-event me-1"></i>Límite: <c:out value="${pubLimiteTexto}"/></span>
+                </c:if>
+            </div>
+        </c:if>
+
+        <%-- Botones --%>
+        <c:if test="${pubHayBotones}">
+            <hr class="pub-sep">
             <div class="d-flex flex-wrap align-items-center gap-2">
+
                 <c:if test="${pubEsDuda}">
                     <a href="${pageContext.request.contextPath}/duda?id=${pub.id}"
-                       class="btn btn-sm bg-body-secondary rounded-pill border-0 fw-semibold position-relative z-1">
-                        <i class="bi bi-chat-left-text me-1"></i>${pub.estado eq 'Abierta' ? 'Ver duda y responder' : 'Ver duda'}
+                       class="btn btn-primary btn-sm rounded-pill fw-semibold pub-btn position-relative z-1 ${pubOcultar ? '' : 'flex-grow-1'}">
+                        <i class="bi bi-chat-dots me-1"></i>${pub.estado eq 'Abierta' ? 'Ver y responder' : 'Ver duda'}
                     </a>
                 </c:if>
-                <c:if test="${pubVerCurso}">
-                    <a href="${pageContext.request.contextPath}/curso?id=${pub.cursoId}"
-                       class="btn btn-sm bg-body-secondary rounded-pill border-0 fw-semibold position-relative z-1">
-                        <i class="bi bi-box-arrow-up-right me-1"></i>Ver en el curso
+
+                                <c:if test="${pubVerCurso}">
+                                    <a href="${pageContext.request.contextPath}/curso?id=${pub.cursoId}"
+                                       class="btn btn-sm bg-body-secondary rounded-pill border-0 fw-semibold position-relative z-1">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i>Ver en el curso
+                                    </a>
+                                </c:if>
+
+                <c:if test="${pubEsPdf}">
+                    <a href="<c:out value='${pub.imagenUrl}'/>" target="_blank" rel="noopener"
+                       class="btn btn-sm rounded-pill fw-semibold pub-btn pub-btn-claro position-relative z-1">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF
                     </a>
                 </c:if>
 
                 <%-- Reportar (solo inscriptos, igual que antes) --%>
                 <c:if test="${pubReportar}">
                     <button type="button"
-                            class="btn btn-sm bg-body-secondary text-danger rounded-pill border-0 fw-semibold position-relative z-1"
+                            class="btn btn-sm rounded-pill fw-semibold pub-btn pub-btn-reportar position-relative z-1"
                             data-bs-toggle="modal"
                             data-bs-target="#modalReportar"
                             data-publicacion-id="${pub.id}"

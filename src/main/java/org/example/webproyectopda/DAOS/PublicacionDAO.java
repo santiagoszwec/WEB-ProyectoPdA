@@ -288,7 +288,8 @@ public class PublicacionDAO {
                 "     WHEN ma.id IS NOT NULL THEN 'Material' " +
                 "     ELSE 'Publicación' END AS tipo, " +
                 "COALESCE(d.categoria, m.categoria) AS categoria, " +
-                "d.estado AS estado " +
+                "d.estado AS estado, " +
+                "(SELECT COUNT(*) FROM comentario co WHERE co.publicacion_id = p.id AND co.activa = TRUE) AS respuestas " + // ★ NUEVO
                 "FROM publicacion p " +
                 "INNER JOIN inscripcion i ON i.curso_id = p.curso_id " +
                 "INNER JOIN curso c ON c.id = p.curso_id " +
@@ -326,7 +327,7 @@ public class PublicacionDAO {
                     publicacion.setNombreCurso(filas.getString("nombre_curso"));
                     publicacion.setTitulo(filas.getString("titulo"));
                     publicacion.setFechaLimite(filas.getObject("fecha_limite", LocalDate.class));
-
+                    publicacion.setRespuestas(filas.getInt("respuestas")); // ★ NUEVO
                     retorno.add(publicacion);
                 }
             }
@@ -691,7 +692,8 @@ public class PublicacionDAO {
                 + "     WHEN ma.id IS NOT NULL THEN 'Material' "
                 + "     ELSE 'Publicación' END AS tipo, "
                 + "COALESCE(d.categoria, m.categoria) AS categoria, "
-                + "d.estado AS estado "
+                + "d.estado AS estado, "
+                + "(SELECT COUNT(*) FROM comentario co WHERE co.publicacion_id = p.id AND co.activa = TRUE) AS respuestas " // ★ NUEVO
                 + "FROM publicacion p "
                 + "LEFT JOIN curso c ON c.id = p.curso_id "
                 + "LEFT JOIN usuario u ON u.id = p.usuario_id "
@@ -805,7 +807,8 @@ public class PublicacionDAO {
         StringBuilder sql = new StringBuilder(
                 "SELECT p.id, p.usuario_id, p.mensaje, p.titulo, p.imagen_url, p.fecha_publicacion, p.fecha_limite, p.activa, " +
                         "c.nombre AS curso, u.nombre AS autor, 'Duda' AS tipo, " +
-                        "d.categoria AS categoria, d.estado AS estado " +
+                        "d.categoria AS categoria, d.estado AS estado, " +
+                        "(SELECT COUNT(*) FROM comentario co WHERE co.publicacion_id = p.id AND co.activa = TRUE) AS respuestas " + // ★ NUEVO
                         "FROM publicacion p " +
                         "INNER JOIN duda d ON d.id = p.id " +
                         "INNER JOIN inscripcion i ON i.curso_id = p.curso_id " +
@@ -854,7 +857,8 @@ public class PublicacionDAO {
                 + "     WHEN m.id IS NOT NULL THEN 'Mensaje' "
                 + "     WHEN ma.id IS NOT NULL THEN 'Material' "
                 + "     ELSE 'Publicación' END AS tipo, "
-                + "COALESCE(d.categoria, m.categoria) AS categoria, d.estado AS estado "
+                + "COALESCE(d.categoria, m.categoria) AS categoria, d.estado AS estado, "
+                + "(SELECT COUNT(*) FROM comentario co WHERE co.publicacion_id = p.id AND co.activa = TRUE) AS respuestas " // ★ NUEVO
                 + "FROM publicacion p "
                 + "LEFT JOIN curso c ON c.id = p.curso_id "
                 + "LEFT JOIN usuario u ON u.id = p.usuario_id "
@@ -895,6 +899,7 @@ public class PublicacionDAO {
         publicacion.setEstado(filas.getString("estado"));
         publicacion.setCurso(filas.getString("curso"));
         publicacion.setActiva(filas.getBoolean("activa"));
+        publicacion.setRespuestas(filas.getInt("respuestas")); // ★ NUEVO
         return publicacion;
     }
 

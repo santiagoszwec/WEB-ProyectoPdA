@@ -18,7 +18,7 @@
                 <c:set var="saludoNombre" value="${fn:split(sessionScope.usuarioLogueado.nombre, ' ')[0]}"/>
                 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
                     <div>
-                        <h1 class="h3 fw-bold mb-1">¡Hola, <c:out value="${saludoNombre}"/>! 👋</h1>
+                        <h1 class="h3 fw-bold mb-1">¡Hola, <c:out value="${saludoNombre}"/>! </h1>
                         <p class="text-body-secondary mb-0">Este es tu resumen académico</p>
                     </div>
                     <span class="badge rounded-pill bg-success-subtle text-success-emphasis fs-6 fw-normal px-3 py-2">
@@ -118,7 +118,7 @@
                 <div class="row g-3">
                     <%-- Mi estudio: horas por materia --%>
                     <div class="col-lg-6">
-                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 card-celeste">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h2 class="h5 fw-semibold mb-0">Mi estudio</h2>
@@ -158,7 +158,7 @@
 
                     <%-- Mis cursos --%>
                     <div class="col-lg-6">
-                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 card-celeste">
                             <div class="card-body d-flex flex-column">
                                 <h2 class="h5 fw-semibold mb-3">Mis cursos</h2>
 

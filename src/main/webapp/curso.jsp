@@ -170,9 +170,8 @@
                                                     <label for="tipoArchivo" class="form-label fw-semibold">Tipo de archivo</label>
                                                     <select id="tipoArchivo" name="tipoArchivo" class="form-select">
                                                         <option value="">Seleccioná un tipo de archivo</option>
-                                                        <option value="JPG" ${valorTipoArchivo == 'JPG' ? 'selected' : ''}>JPG</option>
-                                                        <option value="PDF" ${valorTipoArchivo == 'PDF' ? 'selected' : ''}>PDF</option>
-                                                        <option value="PNG" ${valorTipoArchivo == 'PNG' ? 'selected' : ''}>PNG</option>
+                                                        <option value="Documento" ${valorTipoArchivo == 'PDF' ? 'selected' : ''}>Documento</option>
+                                                        <option value="Imagen" ${valorTipoArchivo == 'JPG' or valorTipoArchivo == 'PNG' ? 'selected' : ''}>Imagen</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-12">
@@ -205,72 +204,78 @@
 
             <h2 class="h4 fw-bold mb-3">Material de Estudio</h2>
 
-            <%-- ★ NUEVO: filtro de material con el estilo del perfil (mismos campos, mismo action) --%>
-            <form method="get"
-                  action="${pageContext.request.contextPath}/curso"
-                  class="card border-0 shadow-sm rounded-4 mb-3">
-                <div class="card-body">
-                    <input type="hidden" name="id" value="${curso.id}">
+                        <%-- Filtro de material: tarjeta desplegable compacta --%>
+                        <c:set var="nFiltros" value="${(empty filtroTipoMaterial ? 0 : 1) + (empty filtroTipoArchivo ? 0 : 1)}" />
+                        <form method="get"
+                              action="${pageContext.request.contextPath}/curso"
+                              class="card border-0 shadow-sm rounded-4 mb-3">
+                            <input type="hidden" name="id" value="${curso.id}">
 
-                    <div class="row g-3 align-items-start">
-                        <div class="col-md-5">
-                            <span class="form-label fw-semibold d-block">Tipo de material</span>
-                            <div class="d-flex flex-wrap gap-3">
-                                <c:forEach var="opcion" items="${tiposMaterialDisponibles}">
-                                    <c:set var="marcado" value="false" />
-                                    <c:forEach var="elegido" items="${filtroTipoMaterial}">
-                                        <c:if test="${elegido == opcion}">
-                                            <c:set var="marcado" value="true" />
-                                        </c:if>
-                                    </c:forEach>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox"
-                                               name="tipoMaterial" value="${opcion}"
-                                               id="tipoMaterial_${opcion}" ${marcado ? 'checked' : ''}>
-                                        <label class="form-check-label" for="tipoMaterial_${opcion}">
-                                            <c:out value="${opcion}" />
-                                        </label>
+                            <button type="button"
+                                    class="filtro-toggle d-flex align-items-center gap-2 w-100 border-0 bg-transparent text-start px-3 py-2 rounded-4"
+                                    data-bs-toggle="collapse" data-bs-target="#filtroMaterial"
+                                    aria-expanded="${nFiltros > 0}" aria-controls="filtroMaterial">
+                                <i class="bi bi-funnel text-secondary" aria-hidden="true"></i>
+                                <span class="fw-semibold flex-grow-1">Filtrar material</span>
+                                <c:if test="${nFiltros > 0}">
+                                    <span class="badge rounded-pill bg-primary-subtle text-primary">
+                                        ${nFiltros} ${nFiltros == 1 ? 'filtro activo' : 'filtros activos'}
+                                    </span>
+                                </c:if>
+                                <i class="bi bi-chevron-down small filtro-flecha" aria-hidden="true"></i>
+                            </button>
+
+                            <div id="filtroMaterial" class="collapse ${nFiltros > 0 ? 'show' : ''}">
+                                <div class="px-3 pb-3 pt-2 border-top">
+                                    <div class="d-flex flex-wrap align-items-end gap-3">
+
+                                        <div>
+                                            <span class="form-label fw-semibold d-block small mb-1">Tipo de material</span>
+                                            <div class="seg" role="group" aria-label="Tipo de material">
+                                                <input type="radio" class="btn-check" name="tipoMaterial"
+                                                       id="tipoMaterial_todos" value="" ${empty filtroTipoMaterial ? 'checked' : ''}>
+                                                <label for="tipoMaterial_todos">Todos</label>
+
+                                                <c:forEach var="opcion" items="${tiposMaterialDisponibles}">
+                                                    <c:set var="marcado" value="false" />
+                                                    <c:forEach var="elegido" items="${filtroTipoMaterial}">
+                                                        <c:if test="${elegido == opcion}">
+                                                            <c:set var="marcado" value="true" />
+                                                        </c:if>
+                                                    </c:forEach>
+                                                    <input type="radio" class="btn-check" name="tipoMaterial"
+                                                           id="tipoMaterial_${opcion}" value="${opcion}" ${marcado ? 'checked' : ''}>
+                                                    <label for="tipoMaterial_${opcion}"><c:out value="${opcion}" /></label>
+                                                </c:forEach>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <span class="form-label fw-semibold d-block small mb-1">Tipo de archivo</span>
+                                            <div class="seg" role="group" aria-label="Tipo de archivo">
+                                                <input type="radio" class="btn-check" name="tipoArchivo"
+                                                       id="tipoArchivo_todos" value="" ${empty grupoArchivoFiltro ? 'checked' : ''}>
+                                                <label for="tipoArchivo_todos">Todos</label>
+
+                                                <input type="radio" class="btn-check" name="tipoArchivo"
+                                                       id="tipoArchivo_documento" value="documento" ${grupoArchivoFiltro == 'documento' ? 'checked' : ''}>
+                                                <label for="tipoArchivo_documento"><i class="bi bi-file-earmark-text me-1"></i>Documento</label>
+
+                                                <input type="radio" class="btn-check" name="tipoArchivo"
+                                                       id="tipoArchivo_imagen" value="imagen" ${grupoArchivoFiltro == 'imagen' ? 'checked' : ''}>
+                                                <label for="tipoArchivo_imagen"><i class="bi bi-image me-1"></i>Imagen</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex gap-2 ms-lg-auto">
+                                            <button type="submit" class="btn btn-dark btn-sm rounded-pill px-3 fw-semibold">Aplicar filtros</button>
+                                            <a href="${pageContext.request.contextPath}/curso?id=${curso.id}"
+                                               class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold">Limpiar filtros</a>
+                                        </div>
                                     </div>
-                                </c:forEach>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <span class="form-label fw-semibold d-block">Tipo de archivo</span>
-                            <div class="d-flex flex-wrap gap-3">
-                                <c:forEach var="opcion" items="${tiposArchivoDisponibles}">
-                                    <c:set var="marcado" value="false" />
-                                    <c:forEach var="elegido" items="${filtroTipoArchivo}">
-                                        <c:if test="${elegido == opcion}">
-                                            <c:set var="marcado" value="true" />
-                                        </c:if>
-                                    </c:forEach>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox"
-                                               name="tipoArchivo" value="${opcion}"
-                                               id="tipoArchivo_${opcion}" ${marcado ? 'checked' : ''}>
-                                        <label class="form-check-label" for="tipoArchivo_${opcion}">
-                                            <c:out value="${opcion}" />
-                                        </label>
-                                    </div>
-                                </c:forEach>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3 d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn-dark rounded-pill px-4 fw-semibold">Filtrar material</button>
-                            <a href="${pageContext.request.contextPath}/curso?id=${curso.id}"
-                               class="btn btn-outline-secondary rounded-pill px-4 fw-semibold">Limpiar filtros</a>
-                        </div>
-                    </div>
-
-                    <p class="text-body-secondary small mb-0 mt-3">
-                        Podés combinar etiquetas: se muestran los materiales que cumplen
-                        con lo seleccionado en cada tipo.
-                    </p>
-                </div>
-            </form>
-
+                        </form>
             <c:choose>
                 <c:when test="${empty materiales}">
                     <div class="alert alert-info">
@@ -285,48 +290,52 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <div class="row g-3 mb-4">
-                        <c:forEach var="material" items="${materiales}">
-                            <div class="col-md-6 col-xl-4 d-flex">
-                                <div class="card pub-reddit w-100">
-                                    <div class="card-body">
-                                        <div class="d-flex flex-wrap gap-2 mb-2">
-                                            <span class="badge text-bg-dark">
-                                                <c:out value="${material.tipoMaterial}" />
-                                            </span>
-                                            <span class="badge text-bg-secondary">
-                                                <c:out value="${material.tipoArchivo}" />
-                                            </span>
-                                            <span class="badge text-bg-info">
-                                                <c:out value="${material.tema}" />
-                                            </span>
+                                        <div class="row g-3 mb-4">
+                                            <c:forEach var="material" items="${materiales}">
+                                                <div class="col-md-6 col-xl-4 d-flex">
+                                                    <article class="card pub-card w-100">
+                                                        <div class="card-body d-flex flex-column gap-2">
+
+                                                            <div class="d-flex flex-wrap gap-1">
+                                                                <span class="badge rounded-pill fw-semibold pub-chip text-bg-dark">
+                                                                    <c:out value="${material.tipoMaterial}" />
+                                                                </span>
+                                                                <span class="badge rounded-pill fw-medium pub-chip pub-chip-cat">
+                                                                    <c:out value="${material.tipoArchivo}" />
+                                                                </span>
+                                                                <span class="badge rounded-pill fw-semibold pub-chip bg-info-subtle text-info-emphasis">
+                                                                    <c:out value="${material.tema}" />
+                                                                </span>
+                                                            </div>
+
+                                                            <p class="mb-0 text-body-secondary" style="font-size:.875rem; line-height:1.55; white-space:pre-line;">
+                                                                <c:out value="${material.mensaje}" />
+                                                            </p>
+
+                                                            <c:if test="${not empty material.imagenUrl}">
+                                                                <img src="<c:out value='${material.imagenUrl}' />"
+                                                                     alt="Imagen del material"
+                                                                     class="img-fluid rounded-3 border align-self-start"
+                                                                     style="max-height: 180px;">
+                                                            </c:if>
+
+                                                            <div class="mt-auto d-flex flex-column gap-2">
+                                                                <hr class="pub-sep">
+                                                                <div class="text-body-secondary" style="font-size:.8rem;">
+                                                                    <i class="bi bi-calendar-event me-1"></i>Fecha: <c:out value="${material.fechaPublicacion}" />
+                                                                </div>
+                                                                <a href="<c:out value='${material.archivoUrl}' />"
+                                                                   target="_blank" rel="noopener"
+                                                                   class="btn btn-primary btn-sm rounded-pill fw-semibold pub-btn">
+                                                                    <i class="bi bi-box-arrow-up-right me-1"></i>Abrir archivo
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </article>
+                                                </div>
+                                            </c:forEach>
                                         </div>
 
-                                        <p class="mb-2">
-                                            <c:out value="${material.mensaje}" />
-                                        </p>
-
-                                        <c:if test="${not empty material.imagenUrl}">
-                                            <img src="<c:out value='${material.imagenUrl}' />"
-                                                 alt="Imagen del material"
-                                                 class="img-fluid rounded mb-2"
-                                                 style="max-height: 180px;">
-                                        </c:if>
-
-                                        <p class="text-muted small mb-2">
-                                            Fecha: <c:out value="${material.fechaPublicacion}" />
-                                        </p>
-
-                                        <a href="<c:out value='${material.archivoUrl}' />"
-                                           target="_blank" rel="noopener"
-                                           class="btn btn-sm btn-outline-primary">
-                                            Abrir archivo
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </div>
                 </c:otherwise>
             </c:choose>
 

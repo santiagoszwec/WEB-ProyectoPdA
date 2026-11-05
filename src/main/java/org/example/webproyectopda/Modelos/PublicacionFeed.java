@@ -16,6 +16,10 @@ public class PublicacionFeed {
     private String NombreCurso;
     private String titulo;
     private LocalDate fechaLimite;
+    private int respuestas;
+
+    public int getRespuestas() { return respuestas; }
+    public void setRespuestas(int respuestas) { this.respuestas = respuestas; }
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
